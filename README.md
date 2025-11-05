@@ -31,5 +31,9 @@ download filtered contact view to .csv
 5. 27.11-03.12
 6. 04.12-11.12
 
+## Low-fidelity wireframe
+
+[See the project prototype on Visily](https://app.visily.ai/projects/d7671805-e0ec-446a-ac0a-58536abd98d4/boards/2307785)
 
 Fredi
+Riina
