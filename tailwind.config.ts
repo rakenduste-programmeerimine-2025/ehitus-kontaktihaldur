@@ -1,4 +1,11 @@
-import type { Config } from "tailwindcss";
+import type { Config } from "tailwindcss"
+import plugin from "tailwindcss/plugin"
+
+const peerDataPlugin = plugin(({ addVariant }) => {
+  addVariant("peer-data", "&[data-state]")
+  addVariant("peer-data-[variant=inset]", "&[data-variant='inset']")
+  addVariant("peer-data-[variant=expanded]", "&[data-variant='expanded']")
+})
 
 export default {
   darkMode: ["class"],
@@ -59,5 +66,7 @@ export default {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
-} satisfies Config;
+  plugins: [
+    peerDataPlugin,
+  ],
+} satisfies Config
