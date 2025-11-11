@@ -1,0 +1,8 @@
+id,created_at,name,email,number,birthday,cost,isBlacklist,isDeleted,isFavorite,workingFrom,workingTo
+1,2025-11-11 17:17:58.008612+00,Tõnu Taiga,tonu.taiga@espak.ee,4136216,1983-10-12,23,false,false,true,2025-09-11,2026-05-13
+2,2025-11-11 17:20:45.320697+00,Germo Pussu,Germo@gaspre.ee,124914326,,25,false,false,false,,
+3,2025-11-11 17:21:26.056867+00,Siim Taba,siim@lukud.ee,46136135342,,32,true,false,false,,
+4,2025-11-11 17:22:23.871534+00,Kauri Sula,sula@harjumetall.ee,654235452,,32,false,false,true,,
+5,2025-11-11 17:23:13.02271+00,Kaupo Kahhel,Kaupo@plaadimaailm.ee,654354252431,,23,false,false,false,,
+7,2025-11-11 17:25:15.500994+00,Ardi Sillutis,ardiasfalt@hot.ee,74321987498312,,54,false,false,true,,
+9,2025-11-11 17:26:00.317844+00,Lembit Lepp,Lepp@treipingid.ee,4613541324,,32,false,false,true,,
