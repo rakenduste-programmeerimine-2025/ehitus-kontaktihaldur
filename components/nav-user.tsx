@@ -1,7 +1,6 @@
 "use client"
 
 import { BadgeCheck, ChevronsUpDown, LogOut } from "lucide-react"
-
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   DropdownMenu,
@@ -18,6 +17,8 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { createClient } from "@/lib/supabase/client"
+import { useRouter } from "next/navigation"
 
 export function NavUser({
   user,
@@ -29,6 +30,13 @@ export function NavUser({
   }
 }) {
   const { isMobile } = useSidebar()
+  const supabase = createClient()
+  const router = useRouter()
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    router.push("/")
+  }
 
   return (
     <SidebarMenu>
@@ -44,7 +52,12 @@ export function NavUser({
                   src={user.avatar}
                   alt={user.name}
                 />
-                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                <AvatarFallback className="rounded-lg">
+                  {user.name
+                    ?.split(" ")
+                    .map(n => n[0])
+                    .join("") || "U"}
+                </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{user.name}</span>
@@ -54,7 +67,7 @@ export function NavUser({
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+            className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg shadow-lg translate-x-3"
             side={isMobile ? "bottom" : "right"}
             align="end"
             sideOffset={4}
@@ -66,7 +79,12 @@ export function NavUser({
                     src={user.avatar}
                     alt={user.name}
                   />
-                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                  <AvatarFallback className="rounded-lg">
+                    {user.name
+                      ?.split(" ")
+                      .map(n => n[0])
+                      .join("") || "U"}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{user.name}</span>
@@ -84,7 +102,7 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout}>
               <LogOut />
               Log out
             </DropdownMenuItem>

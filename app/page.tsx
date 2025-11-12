@@ -33,7 +33,7 @@ export default async function Home() {
         ) : (
           <section className="flex flex-col items-center justify-start p-10 text-center mt-20">
             <h1 className="text-3xl font-semibold mb-2">
-              Hello, {user.email}!
+              Hello, {user.user_metadata?.first_name || "User"}!
             </h1>
             <p className="text-muted-foreground">
               Welcome back to your Contact Manager.

@@ -1,84 +1,93 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { BookUser, HomeIcon, HammerIcon } from "lucide-react"
-
-import { NavMain } from "@/components/nav-main"
-import { NavUser } from "@/components/nav-user"
-import { SidebarTrigger } from "@/components/ui/sidebar"
+import { BookUser, HomeIcon, HammerIcon } from "lucide-react";
+import { NavMain } from "@/components/nav-main";
+import { NavUser } from "@/components/nav-user";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
-} from "@/components/ui/sidebar"
-
-const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
-
-  navMain: [
-    {
-      title: "Home",
-      url: "/",
-      icon: HomeIcon,
-      isActive: false,
-    },
-    {
-      title: "Contacts",
-      url: "/contacts",
-      icon: BookUser,
-      isActive: true,
-      items: [
-        {
-          title: "Contacts List",
-          url: "/contacts",
-        },
-        {
-          title: "Add Contact",
-          url: "/contacts/new",
-        },
-      ],
-    },
-    {
-      title: "Objects",
-      url: "/objects",
-      icon: HammerIcon,
-      isActive: true,
-      items: [
-        {
-          title: "Objects List",
-          url: "/objects",
-        },
-        {
-          title: "Add Object",
-          url: "/objects/new",
-        },
-      ],
-    },
-  ],
-}
+} from "@/components/ui/sidebar";
+import { createClient } from "@/lib/supabase/client";
+import { useEffect, useState } from "react";
+import type { User } from "@supabase/supabase-js";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    const supabase = createClient();
+
+    const loadUser = async () => {
+      const { data } = await supabase.auth.getUser();
+      setUser(data.user);
+      setLoading(false);
+    };
+
+    loadUser();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
   return (
-    <Sidebar
-      collapsible="icon"
-      {...props}
-    >
+    <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <SidebarTrigger className="absolute -right-10 top-3 z-50 bg-background border border-border rounded-md shadow hover:bg-muted transition" />
       </SidebarHeader>
+
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain
+          items={[
+            { title: "Home", url: "/", icon: HomeIcon },
+            {
+              title: "Contacts",
+              url: "/contacts",
+              icon: BookUser,
+              items: [
+                { title: "Contacts List", url: "/contacts" },
+                { title: "Add Contact", url: "/contacts/new" },
+              ],
+            },
+            {
+              title: "Objects",
+              url: "/objects",
+              icon: HammerIcon,
+              items: [
+                { title: "Objects List", url: "/objects" },
+                { title: "Add Object", url: "/objects/new" },
+              ],
+            },
+          ]}
+        />
       </SidebarContent>
-      <SidebarFooter>
-        <NavUser user={data.user} />
-      </SidebarFooter>
-      <SidebarRail />{" "}
+
+      {!loading && user && (
+        <SidebarFooter>
+          <NavUser
+            user={{
+              name: `${user.user_metadata?.first_name || ""} ${
+                user.user_metadata?.last_name || ""
+              }`.trim(),
+              email: user.email ?? "",
+              avatar: "/avatars/default.png",
+            }}
+          />
+        </SidebarFooter>
+      )}
+
+      <SidebarRail />
     </Sidebar>
-  )
+  );
 }
