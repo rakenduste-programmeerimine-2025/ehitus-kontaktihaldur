@@ -1,50 +1,45 @@
-import { DeployButton } from "@/components/deploy-button";
-import { EnvVarWarning } from "@/components/env-var-warning";
-import { AuthButton } from "@/components/auth-button";
-import { Hero } from "@/components/hero";
-import { ThemeSwitcher } from "@/components/theme-switcher";
-import { ConnectSupabaseSteps } from "@/components/tutorial/connect-supabase-steps";
-import { SignUpUserSteps } from "@/components/tutorial/sign-up-user-steps";
-import { hasEnvVars } from "@/lib/utils";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { createClient } from "@/lib/supabase/server";
 
-export default function Home() {
+export default async function Home() {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   return (
     <main className="min-h-screen flex flex-col items-center">
-      <div className="flex-1 w-full flex flex-col gap-20 items-center">
-        <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">
-          <div className="w-full max-w-5xl flex justify-between items-center p-3 px-5 text-sm">
-            <div className="flex gap-5 items-center font-semibold">
-              <Link href={"/"}>Next.js Supabase Starter</Link>
-              <div className="flex items-center gap-2">
-                <DeployButton />
-              </div>
+      <div className="flex-1 w-full flex flex-col items-center">
+        {!user ? (
+          <section className="flex-1 flex flex-col items-center justify-center p-10 text-center">
+            <h1 className="text-3xl font-bold mb-4">
+              Welcome to the Construction Contact Manager!
+            </h1>
+            <div className="w-[690] h-[2px] bg-foreground/20 mb-10"></div>
+            <p className="text-base text-muted-foreground">
+              Please sign in or sign up to get started managing your contacts.
+            </p>
+            <div className="flex gap-4 mt-6">
+              <Button asChild variant="default">
+                <Link href="/auth/login">Sign in</Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link href="/auth/sign-up">Sign up</Link>
+              </Button>
             </div>
-            {!hasEnvVars ? <EnvVarWarning /> : <AuthButton />}
-          </div>
-        </nav>
-        <div className="flex-1 flex flex-col gap-20 max-w-5xl p-5">
-          <Hero />
-          <main className="flex-1 flex flex-col gap-6 px-4">
-            <h2 className="font-medium text-xl mb-4">Next steps</h2>
-            {hasEnvVars ? <SignUpUserSteps /> : <ConnectSupabaseSteps />}
-          </main>
-        </div>
-
-        <footer className="w-full flex items-center justify-center border-t mx-auto text-center text-xs gap-8 py-16">
-          <p>
-            Powered by{" "}
-            <a
-              href="https://supabase.com/?utm_source=create-next-app&utm_medium=template&utm_term=nextjs"
-              target="_blank"
-              className="font-bold hover:underline"
-              rel="noreferrer"
-            >
-              Supabase
-            </a>
-          </p>
-          <ThemeSwitcher />
-        </footer>
+          </section>
+        ) : (
+          <section className="flex flex-col items-center justify-start p-10 text-center mt-20">
+            <h1 className="text-3xl font-semibold mb-2">
+              Hello, {user.email}!
+            </h1>
+            <p className="text-muted-foreground">
+              Welcome back to your Contact Manager.
+            </p>
+          </section>
+        )}
       </div>
     </main>
   );
