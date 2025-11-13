@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
-import { Button } from "@/components/ui/button"
+import { DeleteAccount } from "@/components/account/DeleteAccount"
 import { AccountEditDialog } from "@/components/account/AccountEditDialog"
 import { AvatarUpload } from "@/components/account/AvatarUpload"
 
@@ -84,15 +84,7 @@ export default async function AccountPage() {
             Deleting your account is permanent and cannot be undone. All your
             data will be lost.
           </p>
-
-          <form>
-            <Button
-              variant="destructive"
-              className="bg-red-600 hover:bg-red-700 text-white"
-            >
-              Delete Account
-            </Button>
-          </form>
+          <DeleteAccount />
         </div>
       </section>
     </main>
