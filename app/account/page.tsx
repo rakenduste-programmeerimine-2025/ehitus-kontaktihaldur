@@ -3,6 +3,7 @@ import { redirect } from "next/navigation"
 import { DeleteAccount } from "@/components/account/DeleteAccount"
 import { AccountEditDialog } from "@/components/account/AccountEditDialog"
 import { AvatarUpload } from "@/components/account/AvatarUpload"
+import { UpdatePasswordForm } from "@/components/update-password-form"
 
 export default async function AccountPage() {
   const supabase = await createClient()
@@ -33,7 +34,10 @@ export default async function AccountPage() {
 
         <div className="flex flex-col md:flex-row items-start gap-10">
           <div className="flex flex-col items-center md:items-start gap-4 min-w-[220px]">
-            <AvatarUpload currentAvatar={avatarUrl} userId={user.id} />
+            <AvatarUpload
+              currentAvatar={avatarUrl}
+              userId={user.id}
+            />
 
             <div className="text-center md:text-left">
               <p className="text-xl font-medium">
@@ -78,7 +82,12 @@ export default async function AccountPage() {
             </div>
           </div>
         </div>
-
+        <div className="mt-16 border-t pt-10">
+          <h2 className="text-xl font-semibold mb-6">Change Password</h2>
+          <div className="max-w-md">
+            <UpdatePasswordForm />
+          </div>
+        </div>
         <div className="mt-16 border-t pt-10">
           <p className="text-sm text-muted-foreground mb-6">
             Deleting your account is permanent and cannot be undone. All your
