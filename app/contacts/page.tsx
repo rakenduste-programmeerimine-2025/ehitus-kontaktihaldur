@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
-import FilterForm from "./components/FilterForm"
-import ContactsTable from "./components/ContactsTable"
-import { getContacts } from "./lib/data"
+import FilterForm from "@/components//contacts/filter-form"
+import ContactsTable from "@/components//contacts/contacts-table"
+import { getContacts } from "./data"
 import type { SearchParamsPromise } from "./types"
 
 export default async function ContactsPage({

@@ -1,4 +1,4 @@
-import type { RawSearchParams } from "../types"
+import type { RawSearchParams } from "@/app/contacts/types"
 
 export default function FilterForm({ sp }: { sp: RawSearchParams }) {
   const q = sp.q ?? ""

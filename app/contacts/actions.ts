@@ -2,7 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
-import { toBool } from "./lib/utils"
+import { toBool } from "./utils"
 
 export async function toggleFavorite(formData: FormData) {
   const sb = await createClient()

@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server"
-import type { Contact, RawSearchParams } from "../types"
+import type { Contact, RawSearchParams } from "./types"
 
 export async function getContacts(sp: RawSearchParams): Promise<Contact[]> {
   const supabase = await createClient()

@@ -1,6 +1,6 @@
-import { fmt, workingStatus } from "../lib/utils"
-import { toggleFavorite } from "../actions"
-import type { Contact } from "../types"
+import { fmt, workingStatus } from "@/app/contacts/utils"
+import { toggleFavorite } from "@/app/contacts/actions"
+import type { Contact } from "@/app/contacts/types"
 
 export default function ContactsTable({ contacts }: { contacts: Contact[] }) {
   return (

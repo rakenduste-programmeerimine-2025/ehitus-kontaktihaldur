@@ -1,4 +1,4 @@
-import type { Contact } from "../types"
+import type { Contact } from "./types"
 
 export function toBool(v: FormDataEntryValue | null): boolean | null {
   if (v === null) return null
