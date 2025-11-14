@@ -1,4 +1,4 @@
-import type { Objekt } from "../types"
+import type { Objekt } from "./types"
 
 export function fmt(d?: string | null) {
   if (!d) return "—"
