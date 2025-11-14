@@ -1,48 +1,49 @@
-"use client";
+"use client"
 
-import { BookUser, HomeIcon, HammerIcon } from "lucide-react";
-import { NavMain } from "@/components/nav-main";
-import { NavUser } from "@/components/nav-user";
-import { SidebarTrigger } from "@/components/ui/sidebar";
+import { BookUser, HomeIcon, HammerIcon } from "lucide-react"
+import { NavMain } from "@/components/nav-main"
+import { NavUser } from "@/components/nav-user"
+import { SidebarTrigger } from "@/components/ui/sidebar"
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
-} from "@/components/ui/sidebar";
-import { createClient } from "@/lib/supabase/client";
-import { useEffect, useState } from "react";
-import type { User } from "@supabase/supabase-js";
+} from "@/components/ui/sidebar"
+import { createClient } from "@/lib/supabase/client"
+import { useEffect, useState } from "react"
+import type { User } from "@supabase/supabase-js"
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
+  const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const supabase = createClient();
+    const supabase = createClient()
 
     const loadUser = async () => {
-      const { data } = await supabase.auth.getUser();
-      setUser(data.user);
-      setLoading(false);
-    };
+      const { data } = await supabase.auth.getUser()
+      setUser(data.user)
+      setLoading(false)
+    }
 
-    loadUser();
+    loadUser()
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
+      setUser(session?.user ?? null)
+    })
 
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
+    return () => subscription.unsubscribe()
+  }, [])
 
   return (
-    <Sidebar collapsible="icon" {...props}>
+    <Sidebar
+      collapsible="icon"
+      {...props}
+    >
       <SidebarHeader>
         <SidebarTrigger className="absolute -right-10 top-3 z-50 bg-background border border-border rounded-md shadow hover:bg-muted transition" />
       </SidebarHeader>
@@ -81,7 +82,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 user.user_metadata?.last_name || ""
               }`.trim(),
               email: user.email ?? "",
-              avatar: "/avatars/default.png",
+              avatar: user.user_metadata?.avatar_url || null,
             }}
           />
         </SidebarFooter>
@@ -89,5 +90,5 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
       <SidebarRail />
     </Sidebar>
-  );
+  )
 }
