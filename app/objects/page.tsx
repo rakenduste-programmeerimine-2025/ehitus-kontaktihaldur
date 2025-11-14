@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
-import FilterForm from "./components/FilterForm"
-import ObjectsTable from "./components/ObjectsTable"
-import { getObjects } from "./lib/data"
+import FilterForm from "@/components/objects/filter-form"
+import ObjectsTable from "@/components/objects/objects-table"
+import { getObjects } from "./data"
 import type { SearchParamsPromise } from "./types"
 
 export const dynamic = "force-dynamic"

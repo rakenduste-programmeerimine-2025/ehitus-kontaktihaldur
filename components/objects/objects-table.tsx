@@ -1,5 +1,5 @@
-import type { Objekt } from "../types"
-import { fmt, objectStatus } from "../lib/utils"
+import type { Objekt } from "@/app/objects/types"
+import { fmt, objectStatus } from "@/app/objects/utils"
 
 export default function ObjectsTable({ objects }: { objects: Objekt[] }) {
   return (

@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server"
-import type { Objekt, RawSearchParams } from "../types"
+import type { Objekt, RawSearchParams } from "./types"
 
 export async function getObjects(sp: RawSearchParams): Promise<Objekt[]> {
   const supabase = await createClient()
