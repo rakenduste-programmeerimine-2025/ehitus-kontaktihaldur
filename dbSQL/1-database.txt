@@ -1,0 +1,67 @@
+-- WARNING: This schema is for context only and is not meant to be run.
+-- Table order and constraints may not be valid for execution.
+
+CREATE TABLE public.contacts (
+  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  name text,
+  email text,
+  number text,
+  birthday date,
+  cost real,
+  isblacklist boolean NOT NULL,
+  isdeleted boolean NOT NULL,
+  isfavorite boolean NOT NULL,
+  workingfrom date,
+  workingto date,
+  user_id bigint,
+  CONSTRAINT contacts_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.hasskills (
+  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  fk_contacts_id bigint,
+  fk_skills_id smallint,
+  user_id bigint,
+  CONSTRAINT hasskills_pkey PRIMARY KEY (id),
+  CONSTRAINT HasSkills_FK_Skills_id_fkey FOREIGN KEY (fk_skills_id) REFERENCES public.skills(id),
+  CONSTRAINT HasSkills_FK_Contacts_id_fkey FOREIGN KEY (fk_contacts_id) REFERENCES public.contacts(id)
+);
+CREATE TABLE public.object (
+  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  name text,
+  location text,
+  description text,
+  startdate date,
+  enddate date,
+  isactive boolean,
+  user_id bigint,
+  CONSTRAINT object_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.review (
+  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  fk_workingon_id bigint,
+  rating smallint,
+  reviewtext text,
+  created_at timestamp with time zone,
+  user_id bigint,
+  CONSTRAINT review_pkey PRIMARY KEY (id),
+  CONSTRAINT Review_FK_WorkingOn_id_fkey FOREIGN KEY (fk_workingon_id) REFERENCES public.workingon(id)
+);
+CREATE TABLE public.skills (
+  id smallint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  name character varying,
+  user_id bigint,
+  CONSTRAINT skills_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.workingon (
+  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  ispaid boolean NOT NULL,
+  fk_contact_id bigint,
+  fk_object_id bigint,
+  user_id bigint,
+  CONSTRAINT workingon_pkey PRIMARY KEY (id),
+  CONSTRAINT WorkingOn_FK_Contact_id_fkey FOREIGN KEY (fk_contact_id) REFERENCES public.contacts(id),
+  CONSTRAINT WorkingOn_FK_Object_id_fkey FOREIGN KEY (fk_object_id) REFERENCES public.object(id)
+);
