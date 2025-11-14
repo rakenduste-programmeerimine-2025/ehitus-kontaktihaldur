@@ -4,6 +4,7 @@ import { ThemeProvider } from "next-themes"
 import "./globals.css"
 import { AppSidebar } from "@/components/app-sidebar"
 import { SidebarProvider } from "@/components/ui/sidebar"
+import { Toaster } from "@/components/ui/sonner"
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -51,6 +52,7 @@ export default function RootLayout({
               </main>
             </div>
           </SidebarProvider>
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>
