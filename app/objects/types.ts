@@ -14,7 +14,7 @@ export type RawSearchParams = {
   q?: string
   sort?: "name" | "location" | "startdate" | "enddate" | "created_at"
   dir?: "asc" | "desc"
-  status?: "active" | "passive" | "unknown"
+  status?: "active" | "passive"
   period_from?: string
   period_to?: string
 }

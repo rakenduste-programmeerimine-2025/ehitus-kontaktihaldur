@@ -17,6 +17,7 @@ export default function ObjectsTable({ objects }: { objects: Objekt[] }) {
         <tbody>
           {objects.map(obj => {
             const status = objectStatus(obj)
+
             return (
               <tr
                 key={obj.id}
@@ -33,19 +34,24 @@ export default function ObjectsTable({ objects }: { objects: Objekt[] }) {
                   {fmt(obj.startdate)} – {fmt(obj.enddate)}
                 </td>
                 <td className="p-3">
-                  {status === "Active" ? (
+                  {status === "Active" && (
                     <span className="inline-flex items-center rounded bg-emerald-600 text-white px-2 py-0.5 text-xs">
                       Active
                     </span>
-                  ) : (
+                  )}
+                  {status === "Passive" && (
                     <span className="inline-flex items-center rounded bg-muted px-2 py-0.5 text-xs">
-                      {status}
+                      Passive
                     </span>
+                  )}
+                  {status === "—" && (
+                    <span className="text-muted-foreground">—</span>
                   )}
                 </td>
               </tr>
             )
           })}
+
           {objects.length === 0 && (
             <tr>
               <td

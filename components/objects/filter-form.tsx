@@ -76,9 +76,9 @@ export default function FilterForm({ sp }: { sp: RawSearchParams }) {
                 <option value="">All</option>
                 <option value="active">Active</option>
                 <option value="passive">Passive</option>
-                <option value="unknown">Unknown</option>
               </select>
             </div>
+
             <div className="md:col-span-9">
               <span className="block text-sm mb-1">Object period</span>
               <div className="flex gap-2">

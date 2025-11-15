@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import type { Objekt, RawSearchParams } from "./types"
+import { objectStatus } from "./utils"
 
 export async function getObjects(sp: RawSearchParams): Promise<Objekt[]> {
   const supabase = await createClient()
@@ -16,7 +17,7 @@ export async function getObjects(sp: RawSearchParams): Promise<Objekt[]> {
 
   if (q) {
     query = query.or(
-      `name.ilike.%${q}%,location.ilike.%${q}%,description.ilike.%${q}%`,
+      `name.ilike.%${q}%,location.ilike.%${q}%,description.ilike.%${q}%`
     )
   }
 
@@ -28,26 +29,21 @@ export async function getObjects(sp: RawSearchParams): Promise<Objekt[]> {
     query = query.or(`startdate.is.null,startdate.lte.${period_to}`)
   }
 
-  if (fStatus) {
-    const now = new Date()
-    const pad = (n: number) => String(n).padStart(2, "0")
-    const today = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(
-      now.getDate(),
-    )}`
+  const { data, error } = await query.order(sort, {
+    ascending: dir === "asc",
+    nullsFirst: true,
+  })
 
-    if (fStatus === "active") {
-      query = query.or(`startdate.is.null,startdate.lte.${today}`)
-      query = query.or(`enddate.is.null,enddate.gte.${today}`)
-    } else if (fStatus === "passive") {
-      query = query.or(`startdate.gt.${today},enddate.lt.${today}`)
-    } else if (fStatus === "unknown") {
-      query = query.is("startdate", null).is("enddate", null)
-    }
+  if (error) throw error
+
+  let rows = (data ?? []) as Objekt[]
+
+  if (fStatus === "active" || fStatus === "passive") {
+    rows = rows.filter(o => !(o.startdate == null && o.enddate == null))
+
+    const wanted = fStatus === "active" ? "Active" : "Passive"
+    rows = rows.filter(o => objectStatus(o) === wanted)
   }
 
-  query = query.order(sort, { ascending: dir === "asc", nullsFirst: true })
-
-  const { data, error } = await query
-  if (error) throw error
-  return data ?? []
+  return rows
 }
