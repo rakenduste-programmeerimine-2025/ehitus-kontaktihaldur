@@ -16,9 +16,20 @@ export function fmt(d?: string | null) {
 }
 
 export function workingStatus(c: Contact) {
-  if (!c.workingfrom && !c.workingto) return "Unknown"
   const today = new Date()
-  const fromOk = c.workingfrom ? new Date(c.workingfrom) <= today : true
-  const toOk = c.workingto ? today <= new Date(c.workingto) : true
-  return fromOk && toOk ? "Active" : "Passive"
+
+  const from = c.workingfrom ? new Date(c.workingfrom) : null
+  const to = c.workingto ? new Date(c.workingto) : null
+
+  if (!from && !to) return "—"
+
+  if (from && !to) {
+    return "Active"
+  }
+
+  if (!from && to) {
+    return today <= to ? "Active" : "Passive"
+  }
+
+  return from! <= today && today <= to! ? "Active" : "Passive"
 }

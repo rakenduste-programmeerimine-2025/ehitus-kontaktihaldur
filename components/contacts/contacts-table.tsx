@@ -61,14 +61,18 @@ export default function ContactsTable({ contacts }: { contacts: Contact[] }) {
                 </td>
 
                 <td className="p-3">
-                  {status === "Active" ? (
+                  {status === "Active" && (
                     <span className="inline-flex items-center rounded bg-emerald-600 text-white px-2 py-0.5 text-xs">
                       Active
                     </span>
-                  ) : (
+                  )}
+                  {status === "Passive" && (
                     <span className="inline-flex items-center rounded bg-muted px-2 py-0.5 text-xs">
                       Passive
                     </span>
+                  )}
+                  {status === "—" && (
+                    <span className="text-muted-foreground">—</span>
                   )}
                 </td>
 

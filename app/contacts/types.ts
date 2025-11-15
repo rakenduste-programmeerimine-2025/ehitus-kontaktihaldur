@@ -18,7 +18,7 @@ export type RawSearchParams = {
   q?: string
   sort?: "name" | "created_at" | "workingfrom" | "workingto" | "roles" | "objects"
   dir?: "asc" | "desc"
-  status?: "active" | "passive" | "unknown"
+  status?: "active" | "passive"
   r?: string
   o?: string
   wf_from?: string

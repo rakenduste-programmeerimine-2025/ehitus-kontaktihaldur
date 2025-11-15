@@ -88,7 +88,6 @@ export default function FilterForm({ sp }: { sp: RawSearchParams }) {
                 <option value="">All</option>
                 <option value="active">Active</option>
                 <option value="passive">Passive</option>
-                <option value="unknown">Unknown</option>
               </select>
             </div>
 
