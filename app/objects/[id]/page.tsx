@@ -12,7 +12,7 @@ export default async function ObjectDetailPage({
 }) {
   const { id } = await params;
 
-  // Convert string → number
+  // Convertib string numbriks
   const idNum = Number(id);
   if (isNaN(idNum) || idNum <= 0) notFound();
 
@@ -44,9 +44,15 @@ export default async function ObjectDetailPage({
             ID: <code className="bg-muted px-1 rounded text-xs">{object.id}</code>
           </p>
         </div>
-        <Button asChild variant="outline">
-          <Link href="/objects">Back to List</Link>
-        </Button>
+            <div className="flex gap-2">
+            <Button asChild variant="outline" size="sm">
+            <Link href={`/objects/${object.id}/edit`}>Edit</Link>
+            </Button>
+
+            <Button asChild variant="outline">
+            <Link href="/objects">Back to List</Link>
+            </Button>
+        </div>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
