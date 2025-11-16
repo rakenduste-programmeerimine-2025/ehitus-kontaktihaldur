@@ -1,4 +1,3 @@
-// app/objects/[id]/edit/page.tsx
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
@@ -6,32 +5,39 @@ import Link from "next/link";
 
 export default async function ObjectEditPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ error?: string }>;
 }) {
   const { id } = await params;
+  const { error: hasError } = await searchParams;
   const idNum = Number(id);
   if (isNaN(idNum)) notFound();
 
   const supabase = await createClient();
 
-  // Auth teema
+  // auth kraam
   const {
     data: { session },
   } = await supabase.auth.getSession();
   if (!session) redirect("/auth/login");
 
-    //get object
-  const { data: object, error } = await supabase
+  // fetch osa
+  const { data: object, error: fetchError } = await supabase
     .from("object")
     .select("*")
     .eq("id", idNum)
     .single();
 
-  if (error || !object) notFound();
+  if (fetchError || !object) notFound();
 
+  // post osa
   async function updateObject(formData: FormData) {
     "use server";
+
+    // RECREATE SUPABASE INSIDE SERVER ACTION
+    const supabase = await createClient();
 
     const updates = {
       name: formData.get("name") as string | null,
@@ -43,17 +49,19 @@ export default async function ObjectEditPage({
     };
 
     const { error } = await supabase
-      .from("objects")
+      .from("object")
       .update(updates)
       .eq("id", idNum);
 
     if (error) {
+      console.error("Update error:", error);
       redirect(`/objects/${id}/edit?error=1`);
     } else {
       redirect(`/objects/${id}`);
     }
   }
 
+  // kujunduse osa
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 space-y-6">
       <div className="flex items-center justify-between">
@@ -68,9 +76,15 @@ export default async function ObjectEditPage({
         </div>
       </div>
 
+      {hasError && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+          Failed to save. Please try again.
+        </div>
+      )}
+
       <form id="edit-form" action={updateObject} className="space-y-6">
         <div className="grid gap-6 md:grid-cols-2">
-          {/* Onjekti nimi */}
+          {/* nimi */}
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-foreground mb-1">
               Name
@@ -85,7 +99,7 @@ export default async function ObjectEditPage({
             />
           </div>
 
-          {/* Objekti Address */}
+          {/* aadress */}
           <div>
             <label htmlFor="location" className="block text-sm font-medium text-foreground mb-1">
               Address
@@ -100,7 +114,7 @@ export default async function ObjectEditPage({
             />
           </div>
 
-          {/* from date */}
+          {/* algp'ev */}
           <div>
             <label htmlFor="startdate" className="block text-sm font-medium text-foreground mb-1">
               Start Date
@@ -114,7 +128,7 @@ export default async function ObjectEditPage({
             />
           </div>
 
-          {/* to Date */}
+          {/* lõpupäev */}
           <div>
             <label htmlFor="enddate" className="block text-sm font-medium text-foreground mb-1">
               End Date
@@ -128,7 +142,7 @@ export default async function ObjectEditPage({
             />
           </div>
 
-          {/* kas on aktiivne */}
+          {/* aktiivsus */}
           <div className="flex items-center space-x-2 md:col-span-2">
             <input
               id="inactive"
