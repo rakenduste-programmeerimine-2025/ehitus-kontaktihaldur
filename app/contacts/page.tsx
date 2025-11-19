@@ -32,7 +32,7 @@ export default async function ContactsPage({
             Export data
           </a>
           <Link
-            href="/contacts/add"
+            href="/contacts/new"
             className="inline-flex items-center rounded-md bg-primary px-3 py-2 text-sm text-primary-foreground hover:opacity-90"
           >
             Add Contact
