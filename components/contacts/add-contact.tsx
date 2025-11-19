@@ -1,14 +1,37 @@
-import { createContact } from "@/app/contacts/actions"
+"use client"
+
+import { createContact, type ContactFormState } from "@/app/contacts/actions"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
+import { useActionState, useEffect } from "react"
+import { toast } from "sonner"
 
 type Obj = { id: number; name: string }
 
+const initialState: ContactFormState = {
+  success: false,
+  message: "",
+}
+
 export default function AddContactForm({ objects }: { objects: Obj[] }) {
+  const [state, formAction] = useActionState(createContact, initialState)
+
+  useEffect(() => {
+    if (state.message) {
+      if (state.success) {
+        toast.success(state.message)
+      } else {
+        toast.error("Error adding contact", {
+          description: state.message,
+        })
+      }
+    }
+  }, [state])
+
   return (
     <form
-      action={createContact}
+      action={formAction}
       className="space-y-4 rounded-xl border bg-background p-6 shadow-sm"
     >
       <div className="space-y-1">

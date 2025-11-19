@@ -5,6 +5,11 @@ import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { toBool } from "./utils"
 
+export type ContactFormState = {
+  success: boolean
+  message: string
+}
+
 export async function toggleFavorite(formData: FormData) {
   const sb = await createClient()
   const id = formData.get("id")?.toString()
@@ -35,11 +40,14 @@ export async function deleteContact(formData: FormData) {
   redirect("/contacts")
 }
 
-export async function createContact(formData: FormData) {
+export async function createContact(
+  _prevState: ContactFormState,
+  formData: FormData
+): Promise<ContactFormState> {
   const sb = await createClient()
 
   const name = formData.get("name")?.toString().trim()
-  if (!name) return
+  if (!name) return { success: false, message: "Name is required." }
 
   const number = formData.get("number")?.toString().trim() || null
   const email = formData.get("email")?.toString().trim() || null
@@ -70,8 +78,10 @@ export async function createContact(formData: FormData) {
     p_user_id: userId
   })
 
-  if (error) throw error
+  if (error) {
+    return { success: false, message: error.message }
+  }
 
   revalidatePath("/contacts")
-  redirect("/contacts")
+  return { success: true, message: `Contact ${name} added successfully!` }
 }
