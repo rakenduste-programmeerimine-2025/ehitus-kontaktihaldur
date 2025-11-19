@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server"
-import type { Contact, RawSearchParams } from "./types"
+import type { Contact, RawSearchParams, ObjectHistoryRow } from "./types"
 import { workingStatus } from "./utils"
 
 export async function getContacts(sp: RawSearchParams): Promise<Contact[]> {
@@ -17,7 +17,9 @@ export async function getContacts(sp: RawSearchParams): Promise<Contact[]> {
   const onlyFav = sp?.fav === "1"
   const onlyBl = sp?.bl === "1"
 
-  let query = supabase.from("contacts_with_details").select("*")
+  const supa = supabase.from("contacts_with_details").select("*")
+
+  let query = supa
 
   if (q) {
     query = query.or(
@@ -52,4 +54,33 @@ export async function getContacts(sp: RawSearchParams): Promise<Contact[]> {
   }
 
   return rows
+}
+
+export async function getContactWithHistory(id: number): Promise<{
+  contact: Contact | null
+  history: ObjectHistoryRow[]
+}> {
+  const supabase = await createClient()
+
+  const { data } = await supabase
+    .from("contacts_with_details")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle()
+
+  if (!data) {
+    return { contact: null, history: [] }
+  }
+
+  const contact = data as Contact
+
+  const { data: historyData } = await supabase
+    .from("contact_object_history")
+    .select("*")
+    .eq("contact_id", id)
+    .order("from_date", { ascending: false })
+
+  const history = (historyData ?? []) as ObjectHistoryRow[]
+
+  return { contact, history }
 }

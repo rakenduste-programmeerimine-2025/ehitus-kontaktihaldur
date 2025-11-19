@@ -1,3 +1,4 @@
+import Link from "next/link"
 import { fmt, workingStatus } from "@/app/contacts/utils"
 import { toggleFavorite } from "@/app/contacts/actions"
 import type { Contact } from "@/app/contacts/types"
@@ -45,10 +46,12 @@ export default function ContactsTable({ contacts }: { contacts: Contact[] }) {
                 </td>
 
                 <td className="p-3 font-medium">
-                  <div>{c.name}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {c.email ?? "—"} · {c.number ?? "—"}
-                  </div>
+                  <Link
+                    href={`/contacts/${c.id}`}
+                    className="hover:underline"
+                  >
+                    {c.name}
+                  </Link>
                 </td>
 
                 <td className="p-3 text-muted-foreground">{c.roles ?? "—"}</td>

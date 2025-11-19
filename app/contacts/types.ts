@@ -14,6 +14,16 @@ export type Contact = {
   isblacklist: boolean
 }
 
+export type ObjectHistoryRow = {
+  workingon_id: number
+  contact_id: number
+  from_date: string | null
+  to_date: string | null
+  object_name: string | null
+  rating: number | null
+  reviewtext: string | null
+}
+
 export type RawSearchParams = {
   q?: string
   sort?: "name" | "created_at" | "workingfrom" | "workingto" | "roles" | "objects"
