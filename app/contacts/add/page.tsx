@@ -13,7 +13,7 @@ export default async function AddContactPage() {
   }
 
   const { data: objects, error } = await supabase
-    .from("object") // ← siin peab olema "object"
+    .from("object")
     .select("id, name")
     .order("name")
 
