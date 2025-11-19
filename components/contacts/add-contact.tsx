@@ -3,7 +3,9 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 
-export default function AddContactForm() {
+type Obj = { id: number; name: string }
+
+export default function AddContactForm({ objects }: { objects: Obj[] }) {
   return (
     <form
       action={createContact}
@@ -49,17 +51,27 @@ export default function AddContactForm() {
         <Input
           id="roles"
           name="roles"
-          placeholder="e.g. Electrician"
+          placeholder="Electrician, Welder"
         />
       </div>
 
       <div className="space-y-1">
         <Label htmlFor="objects">Object(s)</Label>
-        <Input
+        <select
           id="objects"
           name="objects"
-          placeholder="e.g. Pilve 6"
-        />
+          multiple
+          className="w-full rounded-md border px-3 py-2 text-sm"
+        >
+          {objects.map((o: Obj) => (
+            <option
+              key={o.id}
+              value={o.id}
+            >
+              {o.name}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="space-y-1">

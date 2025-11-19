@@ -44,26 +44,30 @@ export async function createContact(formData: FormData) {
   const number = formData.get("number")?.toString().trim() || null
   const email = formData.get("email")?.toString().trim() || null
   const birthday = formData.get("birthday")?.toString().trim() || null
-  const roles = formData.get("roles")?.toString().trim() || null
-  const objects = formData.get("objects")?.toString().trim() || null
+  const rolesStr = formData.get("roles")?.toString().trim() || ""
+  const objectsArr = formData.getAll("objects").map(o => Number(o))
   const workingfrom = formData.get("workingfrom")?.toString().trim() || null
   const workingto = formData.get("workingto")?.toString().trim() || null
 
   const costStr = formData.get("cost")?.toString().trim()
   const cost = costStr ? Number(costStr) : null
 
-  const { error } = await sb.from("contacts").insert({
-    name,
-    number,
-    email,
-    birthday,
-    roles,
-    objects,
-    workingfrom,
-    workingto,
-    cost,
-    isfavorite: false,
-    isblacklist: false,
+  const { data: { user } } = await sb.auth.getUser()
+  if (!user) redirect("/auth/login")
+
+  const userId = user.id
+
+  const { error } = await sb.rpc("create_full_contact", {
+    p_name: name,
+    p_number: number,
+    p_email: email,
+    p_birthday: birthday,
+    p_roles_str: rolesStr,
+    p_objects_arr: objectsArr,
+    p_workingfrom: workingfrom,
+    p_workingto: workingto,
+    p_cost: cost,
+    p_user_id: userId
   })
 
   if (error) throw error
@@ -71,4 +75,3 @@ export async function createContact(formData: FormData) {
   revalidatePath("/contacts")
   redirect("/contacts")
 }
-
