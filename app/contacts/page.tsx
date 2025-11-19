@@ -4,6 +4,7 @@ import FilterForm from "@/components/contacts/filter-form"
 import ContactsTable from "@/components/contacts/contacts-table"
 import { getContacts } from "./data"
 import type { SearchParamsPromise } from "./types"
+import Link from "next/link"
 
 export default async function ContactsPage({
   searchParams,
@@ -30,13 +31,12 @@ export default async function ContactsPage({
           >
             Export data
           </a>
-          <button
-            type="button"
-            aria-disabled="true"
-            className="inline-flex items-center rounded-md bg-primary px-3 py-2 text-sm text-primary-foreground opacity-60 cursor-default"
+          <Link
+            href="/contacts/add"
+            className="inline-flex items-center rounded-md bg-primary px-3 py-2 text-sm text-primary-foreground hover:opacity-90"
           >
             Add Contact
-          </button>
+          </Link>
         </div>
       </div>
 
