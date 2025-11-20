@@ -65,3 +65,132 @@ CREATE TABLE public.workingon (
   CONSTRAINT WorkingOn_FK_Contact_id_fkey FOREIGN KEY (fk_contact_id) REFERENCES public.contacts(id),
   CONSTRAINT WorkingOn_FK_Object_id_fkey FOREIGN KEY (fk_object_id) REFERENCES public.object(id)
 );
+
+create or replace view public.contact_object_history as
+select
+  w.id            as workingon_id,
+  w.fk_contact_id as contact_id,
+  w.created_at    as from_date,
+  null::timestamptz as to_date,
+  o.name          as object_name,
+  r.rating,
+  r.reviewtext
+from public.workingon w
+join public.object o
+  on o.id = w.fk_object_id
+left join public.review r
+  on r.fk_workingon_id = w.id;
+
+CREATE OR REPLACE VIEW contacts_with_details AS
+SELECT
+  c.*,
+  (
+    SELECT string_agg(s.name, ', ')
+    FROM hasskills hs
+    JOIN skills s ON hs.fk_skills_id = s.id
+    WHERE hs.fk_contacts_id = c.id
+  ) AS roles,
+  (
+    SELECT string_agg(o.name, ', ')
+    FROM workingon wo
+    JOIN object o ON wo.fk_object_id = o.id
+    WHERE wo.fk_contact_id = c.id
+  ) AS objects
+FROM
+  contacts c;
+
+CREATE OR REPLACE FUNCTION public.create_full_contact(
+    p_name        text,
+    p_number      text,
+    p_email       text,
+    p_birthday    date,
+    p_roles_str   text,
+    p_objects_arr bigint[],
+    p_workingfrom date,
+    p_workingto   date,
+    p_cost        real,
+    p_user_id     uuid
+)
+RETURNS bigint AS $$
+DECLARE
+    v_contact_id bigint;
+    v_role_name  text;
+    v_object_id  bigint;
+    v_skill_id   smallint;
+BEGIN
+    INSERT INTO contacts (
+        name,
+        number,
+        email,
+        birthday,
+        cost,
+        isfavorite,
+        isblacklist,
+        workingfrom,
+        workingto,
+        user_id,
+        isdeleted
+    )
+    VALUES (
+        p_name,
+        p_number,
+        p_email,
+        p_birthday,
+        p_cost,
+        FALSE,
+        FALSE,
+        p_workingfrom,
+        p_workingto,
+        p_user_id,
+        FALSE
+    )
+    RETURNING id INTO v_contact_id;
+
+    IF p_roles_str IS NOT NULL AND p_roles_str <> '' THEN
+        FOREACH v_role_name IN ARRAY string_to_array(p_roles_str, ',')
+        LOOP
+            v_role_name := trim(v_role_name);
+            IF v_role_name <> '' THEN
+                SELECT id
+                INTO v_skill_id
+                FROM skills
+                WHERE name = v_role_name
+                  AND user_id = p_user_id;
+
+                IF v_skill_id IS NULL THEN
+                    INSERT INTO skills (name, user_id)
+                    VALUES (v_role_name, p_user_id)
+                    RETURNING id INTO v_skill_id;
+                END IF;
+
+                INSERT INTO hasskills (fk_contacts_id, fk_skills_id, user_id)
+                VALUES (v_contact_id, v_skill_id, p_user_id);
+            END IF;
+        END LOOP;
+    END IF;
+
+    IF p_objects_arr IS NOT NULL AND array_length(p_objects_arr, 1) > 0 THEN
+        FOREACH v_object_id IN ARRAY p_objects_arr
+        LOOP
+            INSERT INTO workingon (
+                fk_contact_id,
+                fk_object_id,
+                user_id,
+                ispaid
+            )
+            VALUES (
+                v_contact_id,
+                v_object_id,
+                p_user_id,
+                TRUE
+            );
+        END LOOP;
+    END IF;
+
+    RETURN v_contact_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+GRANT EXECUTE ON FUNCTION public.create_full_contact(
+    text, text, text, date, text, bigint[], date, date, real, uuid
+) TO authenticated;
