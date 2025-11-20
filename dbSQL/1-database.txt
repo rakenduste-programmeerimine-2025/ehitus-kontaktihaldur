@@ -15,6 +15,7 @@ CREATE TABLE public.contacts (
   workingfrom date,
   workingto date,
   user_id bigint,
+  team_id BIGINT NULL REFERENCES public.team(id),
   CONSTRAINT contacts_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.hasskills (
@@ -36,6 +37,7 @@ CREATE TABLE public.object (
   enddate date,
   isactive boolean,
   user_id bigint,
+  team_id BIGINT NULL REFERENCES public.team(id),
   CONSTRAINT object_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.review (
@@ -194,3 +196,40 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 GRANT EXECUTE ON FUNCTION public.create_full_contact(
     text, text, text, date, text, bigint[], date, date, real, uuid
 ) TO authenticated;
+
+-- TEAM TABLE
+CREATE TABLE public.team (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  name TEXT NOT NULL,
+  invite_code TEXT NOT NULL UNIQUE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- MEMBER_ROLE TABLE
+CREATE TABLE public.member_role (
+  id SMALLINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  name TEXT UNIQUE NOT NULL
+);
+
+-- MEMBER_STATUS TABLE
+CREATE TABLE public.member_status (
+  id SMALLINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  name TEXT UNIQUE NOT NULL
+);
+
+-- TEAM_MEMBER TABLE
+CREATE TABLE public.team_member (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  team_id BIGINT NOT NULL REFERENCES public.team(id),
+  user_id BIGINT NOT NULL,
+  role_id SMALLINT NOT NULL REFERENCES public.member_role(id),
+  status_id SMALLINT NOT NULL REFERENCES public.member_status(id),
+  joined_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- MODIFY EXISTING TABLES (if necessary)
+ALTER TABLE public.contacts
+ADD COLUMN team_id BIGINT NULL REFERENCES public.team(id);
+
+ALTER TABLE public.object
+ADD COLUMN team_id BIGINT NULL REFERENCES public.team(id);
