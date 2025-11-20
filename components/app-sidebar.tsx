@@ -67,7 +67,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
               icon: HammerIcon,
               items: [
                 { title: "Objects List", url: "/objects" },
-                { title: "Add Object", url: "/objects/new" },
+                { title: "Add Object", url: "/objects/add" },
               ],
             },
           ]}
