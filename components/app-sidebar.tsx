@@ -1,6 +1,6 @@
 "use client"
 
-import { BookUser, HomeIcon, HammerIcon } from "lucide-react"
+import { BookUser, HomeIcon, HammerIcon, UsersIcon } from "lucide-react"
 import { NavMain } from "@/components/nav-main"
 import { NavUser } from "@/components/nav-user"
 import { SidebarTrigger } from "@/components/ui/sidebar"
@@ -52,6 +52,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
         <NavMain
           items={[
             { title: "Home", url: "/", icon: HomeIcon },
+            { title: "Teams", url: "/teams", icon: UsersIcon },
             {
               title: "Contacts",
               url: "/contacts",
