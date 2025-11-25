@@ -69,6 +69,11 @@ export function SingleContact({ contact: c, history }: Props) {
               name="id"
               value={String(c.id)}
             />
+            <input
+              type="hidden"
+              name="name"
+              value={c.name}
+            />
             <button
               type="submit"
               className="inline-flex items-center rounded-md bg-red-600 text-white px-3 py-2 text-sm hover:bg-red-700"
