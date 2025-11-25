@@ -34,8 +34,13 @@ export async function deleteContact(formData: FormData) {
   const sb = await createClient()
   const id = formData.get("id")?.toString()
   if (!id) return
-  const { error } = await sb.from("contacts").delete().eq("id", id)
+
+  const { error } = await sb.rpc("delete_full_contact", {
+    p_contact_id: Number(id),
+  })
+
   if (error) throw error
+
   revalidatePath("/contacts")
   redirect("/contacts")
 }
