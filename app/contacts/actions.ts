@@ -33,6 +33,8 @@ export async function toggleBlacklist(formData: FormData) {
 export async function deleteContact(formData: FormData) {
   const sb = await createClient()
   const id = formData.get("id")?.toString()
+  const name = formData.get("name")?.toString() || ""
+
   if (!id) return
 
   const { error } = await sb.rpc("delete_full_contact", {
@@ -42,8 +44,14 @@ export async function deleteContact(formData: FormData) {
   if (error) throw error
 
   revalidatePath("/contacts")
-  redirect("/contacts")
+
+  const params = new URLSearchParams()
+  params.set("deleted", "1")
+  if (name) params.set("name", name)
+
+  redirect(`/contacts?${params.toString()}`)
 }
+
 
 export async function createContact(
   _prevState: ContactFormState,

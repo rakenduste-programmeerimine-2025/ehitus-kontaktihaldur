@@ -5,6 +5,7 @@ import ContactsTable from "@/components/contacts/contacts-table"
 import { getContacts } from "./data"
 import type { SearchParamsPromise } from "./types"
 import Link from "next/link"
+import { ContactsAlerts } from "./ContactsAlerts"
 
 export default async function ContactsPage({
   searchParams,
@@ -21,27 +22,29 @@ export default async function ContactsPage({
   const contacts = await getContacts(sp)
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Contacts list</h1>
-        <div className="flex gap-2">
-          <a
-            href="/api/contacts/export"
-            className="inline-flex items-center rounded-md border px-3 py-2 text-sm hover:bg-muted"
-          >
-            Export data
-          </a>
-          <Link
-            href="/contacts/new"
-            className="inline-flex items-center rounded-md bg-primary px-3 py-2 text-sm text-primary-foreground hover:opacity-90"
-          >
-            Add Contact
-          </Link>
+    <ContactsAlerts>
+      <div className="mx-auto max-w-6xl px-4 py-8 space-y-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-semibold">Contacts list</h1>
+          <div className="flex gap-2">
+            <a
+              href="/api/contacts/export"
+              className="inline-flex items-center rounded-md border px-3 py-2 text-sm hover:bg-muted"
+            >
+              Export data
+            </a>
+            <Link
+              href="/contacts/new"
+              className="inline-flex items-center rounded-md bg-primary px-3 py-2 text-sm text-primary-foreground hover:opacity-90"
+            >
+              Add Contact
+            </Link>
+          </div>
         </div>
-      </div>
 
-      <FilterForm sp={sp} />
-      <ContactsTable contacts={contacts} />
-    </div>
+        <FilterForm sp={sp} />
+        <ContactsTable contacts={contacts} />
+      </div>
+    </ContactsAlerts>
   )
 }
