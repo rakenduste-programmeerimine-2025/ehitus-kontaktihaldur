@@ -52,7 +52,19 @@ export default function RootLayout({
               </main>
             </div>
           </SidebarProvider>
-          <Toaster />
+          <Toaster
+            position="top-right"
+            richColors
+            expand
+            closeButton
+            toastOptions={{
+              style: {
+                fontSize: "16px",
+                padding: "14px 18px",
+                borderRadius: "10px",
+              },
+            }}
+          />
         </ThemeProvider>
       </body>
     </html>
