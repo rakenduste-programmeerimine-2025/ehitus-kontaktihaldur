@@ -5,6 +5,7 @@ import CreateTeamCard from "@/components/teams/create-team-card"
 import JoinTeamCard from "@/components/teams/join-team-card"
 import NoTeamState from "@/components/teams/no-team-state"
 import CreateTeamModal from "@/components/teams/create-team-modal"
+import JoinTeamModal from "@/components/teams/join-team-modal"
 
 type JoinedTeamRow = {
   team: { id: number; name: string } | null
@@ -96,6 +97,7 @@ export default async function TeamsPage() {
           </section>
         )}
         <CreateTeamModal />
+        <JoinTeamModal />
       </div>
     </main>
   )

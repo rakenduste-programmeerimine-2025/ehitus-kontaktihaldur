@@ -56,12 +56,15 @@ export async function createTeamAction(
       joinCode: "",
     }
   }
-  const { error: memberError } = await supabase.from("team_member").insert({
-    team_id: team.id,
-    user_id: user.id,
-    role_id: 1,
-    status_id: 2,
-  })
+
+  const { error: memberError } = await supabase
+    .from("team_member")
+    .insert({
+      team_id: team.id,
+      user_id: user.id,
+      role_id: 1,   // ADMIN
+      status_id: 2, // APPROVED
+    })
 
   if (memberError) {
     return {
@@ -77,5 +80,93 @@ export async function createTeamAction(
     success: true,
     message: `Team "${name}" created successfully!`,
     joinCode: inviteCode,
+  }
+}
+export async function joinTeamAction(
+  _prevState: unknown,
+  formData: FormData,
+) {
+  const code = formData.get("code")?.toString().trim().toLowerCase()
+
+  if (!code) {
+    return {
+      success: false,
+      message: "Invite code is required.",
+    }
+  }
+
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return {
+      success: false,
+      message: "Not authenticated.",
+    }
+  }
+
+  const { data: team } = await supabase
+    .from("team")
+    .select("id, invite_code")
+    .eq("invite_code", code)
+    .maybeSingle()
+
+  if (!team) {
+    return {
+      success: false,
+      message: "Team not found. Check the invite code.",
+    }
+  }
+
+  const { data: existing } = await supabase
+    .from("team_member")
+    .select("id, status_id")
+    .eq("team_id", team.id)
+    .eq("user_id", user.id)
+    .maybeSingle()
+
+  if (existing) {
+    if (existing.status_id === 2) {
+      return {
+        success: false,
+        message: "You are already a member of this team.",
+      }
+    }
+    if (existing.status_id === 1) {
+      return {
+        success: false,
+        message: "Your join request is still pending approval.",
+      }
+    }
+    if (existing.status_id === 3) {
+      return {
+        success: false,
+        message: "Your join request was rejected.",
+      }
+    }
+  }
+
+  const { error: joinError } = await supabase
+    .from("team_member")
+    .insert({
+      team_id: team.id,
+      user_id: user.id,
+      role_id: 3,    // VIEWER
+      status_id: 1,  // PENDING
+    })
+
+  if (joinError) {
+    return {
+      success: false,
+      message: joinError.message,
+    }
+  }
+
+  return {
+    success: true,
+    message: "Join request sent! Waiting for team admin approval.",
   }
 }
