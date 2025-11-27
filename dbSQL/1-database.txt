@@ -68,21 +68,25 @@ CREATE TABLE public.workingon (
   CONSTRAINT WorkingOn_FK_Object_id_fkey FOREIGN KEY (fk_object_id) REFERENCES public.object(id)
 );
 
-create or replace view public.contact_object_history as
-select
-  w.id            as workingon_id,
-  w.fk_contact_id as contact_id,
-  w.created_at    as from_date,
-  null::timestamptz as to_date,
-  o.name          as object_name,
+--VIEW 1
+DROP VIEW IF EXISTS public.contact_object_history CASCADE;
+CREATE OR REPLACE VIEW public.contact_object_history AS
+SELECT
+  w.id               AS workingon_id,
+  w.fk_contact_id    AS contact_id,
+  w.created_at       AS from_date,
+  NULL::timestamptz  AS to_date,
+  o.id               AS object_id,     
+  o.name             AS object_name,  
   r.rating,
   r.reviewtext
-from public.workingon w
-join public.object o
-  on o.id = w.fk_object_id
-left join public.review r
-  on r.fk_workingon_id = w.id;
+FROM public.workingon w
+JOIN public.object o
+  ON o.id = w.fk_object_id
+LEFT JOIN public.review r
+  ON r.fk_workingon_id = w.id;
 
+--VIEW 2
 CREATE OR REPLACE VIEW contacts_with_details AS
 SELECT
   c.*,
@@ -101,6 +105,24 @@ SELECT
 FROM
   contacts c;
 
+--VIEW 3
+CREATE VIEW object_with_workers AS
+SELECT
+ o.id,
+ o.name,
+ o.location,
+ o.description,
+ o.isactive,
+ o.startdate,
+ o.enddate,
+ c.name AS contact,
+ c.id AS contactid,
+ w.ispaid AS ispaid
+FROM object o
+LEFT JOIN workingon w ON o.id = w.fk_object_id
+LEFT JOIN contacts c ON w.fk_contact_id = c.id;
+
+--CREATE CONTACT
 CREATE OR REPLACE FUNCTION public.create_full_contact(
     p_name        text,
     p_number      text,
@@ -196,6 +218,95 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 GRANT EXECUTE ON FUNCTION public.create_full_contact(
     text, text, text, date, text, bigint[], date, date, real, uuid
 ) TO authenticated;
+
+--UPDATE CONTACT
+CREATE OR REPLACE FUNCTION update_full_contact_with_history(
+  p_contact_id bigint,
+  p_name text,
+  p_number text,
+  p_email text,
+  p_birthday date,
+  p_roles_str text,
+  p_workingfrom date,
+  p_workingto date,
+  p_cost real,
+  p_isblacklist boolean,
+  p_user_id uuid,
+  p_history jsonb
+)
+RETURNS void AS $$
+DECLARE
+  rec RECORD;
+  v_object_id bigint;
+  v_existing_review_id bigint;
+BEGIN
+  UPDATE contacts
+  SET name = p_name,
+      number = p_number,
+      email = p_email,
+      birthday = p_birthday,
+      cost = p_cost,
+      workingfrom = p_workingfrom,
+      workingto = p_workingto,
+      isblacklist = p_isblacklist
+  WHERE id = p_contact_id
+    AND user_id = p_user_id;
+
+  FOR rec IN 
+    SELECT * FROM jsonb_to_recordset(p_history)
+    ( workingon_id bigint,
+      object_name text,
+      rating smallint,
+      reviewtext text )
+  LOOP
+
+    SELECT fk_object_id
+      INTO v_object_id
+      FROM workingon
+      WHERE id = rec.workingon_id;
+
+    UPDATE objects
+      SET name = rec.object_name
+      WHERE id = v_object_id;
+
+    SELECT id INTO v_existing_review_id
+      FROM review
+      WHERE fk_workingon_id = rec.workingon_id;
+
+    IF v_existing_review_id IS NULL THEN
+      INSERT INTO review (fk_workingon_id, rating, reviewtext, user_id)
+      VALUES (rec.workingon_id, rec.rating, rec.reviewtext, p_user_id);
+    ELSE
+      UPDATE review
+        SET rating = rec.rating,
+            reviewtext = rec.reviewtext
+      WHERE id = v_existing_review_id;
+    END IF;
+
+  END LOOP;
+
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+--DELETE CONTACT
+create or replace function delete_full_contact(p_contact_id bigint)
+returns void as $$
+begin
+  delete from review
+  where fk_workingon_id in (
+    select id from workingon where fk_contact_id = p_contact_id
+  );
+
+  delete from workingon
+  where fk_contact_id = p_contact_id;
+
+  delete from hasskills
+  where fk_contacts_id = p_contact_id;
+
+  delete from contacts
+  where id = p_contact_id;
+end;
+$$ language plpgsql security definer;
 
 -- TEAM TABLE
 CREATE TABLE public.team (
