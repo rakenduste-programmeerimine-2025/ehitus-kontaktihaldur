@@ -8,7 +8,10 @@ import { toBool } from "./utils"
 export type ContactFormState = {
   success: boolean
   message: string
+  id?: number | null
+  contactName?: string | null
 }
+
 
 export async function toggleFavorite(formData: FormData) {
   const sb = await createClient()
@@ -102,8 +105,7 @@ export async function createContact(
 export async function updateContact(
   _prevState: ContactFormState,
   formData: FormData
-) {
-
+): Promise<ContactFormState> {
   const sb = await createClient()
 
   const id = Number(formData.get("id"))
@@ -160,7 +162,11 @@ export async function updateContact(
   }
 
   revalidatePath(`/contacts/${id}`)
-redirect(`/contacts/${id}`)
 
-  return { success: true, message: "Contact updated successfully!" }
+  return {
+    success: true,
+    message: `Contact ${name} updated successfully!`,
+    id,
+    contactName: name
+  }
 }
