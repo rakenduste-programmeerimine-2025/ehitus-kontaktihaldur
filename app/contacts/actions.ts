@@ -98,3 +98,69 @@ export async function createContact(
   revalidatePath("/contacts")
   return { success: true, message: `Contact ${name} added successfully!` }
 }
+
+export async function updateContact(
+  _prevState: ContactFormState,
+  formData: FormData
+) {
+
+  const sb = await createClient()
+
+  const id = Number(formData.get("id"))
+  if (!id) return { success: false, message: "Missing contact ID" }
+
+  const name = formData.get("name")?.toString() || null
+  const number = formData.get("number")?.toString() || null
+  const email = formData.get("email")?.toString() || null
+  const birthday = formData.get("birthday")?.toString() || null
+  const roles = formData.get("roles")?.toString() || null
+  const workingfrom = formData.get("workingfrom")?.toString() || null
+  const workingto = formData.get("workingto")?.toString() || null
+  const costStr = formData.get("cost")?.toString()
+  const cost = costStr ? Number(costStr) : null
+  const isblacklist = formData.get("isblacklist") === "on"
+
+  const { data: { user } } = await sb.auth.getUser()
+  if (!user) return { success: false, message: "Not logged in." }
+
+  const history = []
+  let index = 0
+
+  while (true) {
+    const wId = formData.get(`history_workingon_id_${index}`)
+    if (!wId) break
+
+    history.push({
+      workingon_id: Number(wId),
+      object_id: Number(formData.get(`history_object_${index}`)) || null,
+      rating: Number(formData.get(`history_rating_${index}`)) || null,
+      reviewtext: formData.get(`history_review_${index}`)?.toString() || null
+    })
+
+    index++
+  }
+
+  const { error } = await sb.rpc("update_full_contact_with_history", {
+    p_contact_id: id,
+    p_name: name,
+    p_number: number,
+    p_email: email,
+    p_birthday: birthday,
+    p_roles_str: roles,
+    p_workingfrom: workingfrom,
+    p_workingto: workingto,
+    p_cost: cost,
+    p_isblacklist: isblacklist,
+    p_user_id: user.id,
+    p_history: history
+  })
+
+  if (error) {
+    return { success: false, message: error.message }
+  }
+
+  revalidatePath(`/contacts/${id}`)
+redirect(`/contacts/${id}`)
+
+  return { success: true, message: "Contact updated successfully!" }
+}
