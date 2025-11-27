@@ -16,7 +16,7 @@ export default function TeamCard({ team }: Props) {
 
   return (
     <div
-      onClick={() => router.push(`/team/${team.id}`)}
+      onClick={() => router.push(`/teams/${team.id}`)}
       className="
         cursor-pointer rounded-xl p-5 border border-neutral-200
         bg-white/80 backdrop-blur-sm
