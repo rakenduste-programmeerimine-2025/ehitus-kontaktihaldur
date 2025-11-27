@@ -36,6 +36,7 @@ export async function createObject(
   }
 
   redirect(`/objects/${data.id}`)
+<<<<<<< HEAD
 }
 
 // app/objects/actions.ts  ← add this function below createObject
@@ -70,4 +71,6 @@ export async function updateObject(
   }
 
   redirect(`/objects/${id}`)
+=======
+>>>>>>> defe3e79d0d3e09376507a92ae85de8d61d12c37
 }
