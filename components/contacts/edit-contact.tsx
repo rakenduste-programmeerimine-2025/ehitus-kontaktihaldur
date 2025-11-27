@@ -1,11 +1,13 @@
 "use client"
 
-import { useActionState } from "react"
+import { useActionState, useEffect } from "react"
 import { updateContact } from "@/app/contacts/actions"
-import type { Contact, ObjectHistoryRow } from "@/app/contacts/types"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
+import { toast } from "sonner"
+import { useRouter } from "next/navigation"
+import type { Contact, ObjectHistoryRow } from "@/app/contacts/types"
 
 type Props = {
   contact: Contact
@@ -14,10 +16,26 @@ type Props = {
 }
 
 export default function EditContact({ contact, history, objects }: Props) {
-  const [, formAction] = useActionState(updateContact, {
+  const [state, formAction] = useActionState(updateContact, {
     success: false,
     message: "",
+    id: null,
   })
+
+  const router = useRouter()
+
+  useEffect(() => {
+    if (state.message) {
+      if (state.success) {
+        toast.success(state.message)
+        router.push(`/contacts/${state.id}`)
+      } else {
+        toast.error("Error updating contact", {
+          description: state.message,
+        })
+      }
+    }
+  }, [state, router])
 
   return (
     <form
