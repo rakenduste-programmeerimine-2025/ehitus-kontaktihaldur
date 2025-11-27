@@ -4,10 +4,12 @@ import { useActionState, useEffect } from "react"
 import { updateContact } from "@/app/contacts/actions"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 import type { Contact, ObjectHistoryRow } from "@/app/contacts/types"
+
+import { CancelButton } from "@/components/ui/cancel-button"
+import { SaveButton } from "@/components/ui/save-button"
 
 type Props = {
   contact: Contact
@@ -39,6 +41,7 @@ export default function EditContact({ contact, history, objects }: Props) {
 
   return (
     <form
+      id="edit-contact-form"
       action={formAction}
       className="max-w-4xl mx-auto rounded-xl border bg-white p-8 shadow-sm space-y-10"
     >
@@ -192,13 +195,8 @@ export default function EditContact({ contact, history, objects }: Props) {
       </div>
 
       <div className="flex justify-end gap-2 pt-4">
-        <Button
-          type="button"
-          variant="outline"
-        >
-          Cancel
-        </Button>
-        <Button type="submit">Save Changes</Button>
+        <CancelButton />
+        <SaveButton formId="edit-contact-form" />
       </div>
     </form>
   )
