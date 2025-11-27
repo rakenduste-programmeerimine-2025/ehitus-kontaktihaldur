@@ -4,6 +4,8 @@ import FilterForm from "@/components/objects/filter-form"
 import ObjectsTable from "@/components/objects/objects-table"
 import { getObjects } from "./data"
 import type { SearchParamsPromise } from "./types"
+import { Button } from "@/components/ui/button"
+import Link from "next/link"
 
 export const dynamic = "force-dynamic"
 
@@ -16,6 +18,7 @@ export default async function ObjectsPage({
   const {
     data: { session },
   } = await supabase.auth.getSession()
+
   if (!session) redirect("/auth/login")
 
   const sp = await searchParams
@@ -25,21 +28,15 @@ export default async function ObjectsPage({
     <div className="mx-auto max-w-6xl px-4 py-8 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Objects List</h1>
-        <div className="flex gap-2">
-          <a
-            href="/api/objects/export"
-            className="inline-flex items-center rounded-md border px-3 py-2 text-sm hover:bg-muted"
-          >
-            Export data
-          </a>
-          <button
-            type="button"
-            title="Add Object (disabled)"
-            aria-disabled="true"
-            className="inline-flex items-center rounded-md bg-primary px-3 py-2 text-sm text-primary-foreground opacity-60 cursor-default"
-          >
-            Add Object
-          </button>
+
+        <div className="flex gap-3">
+          <Button variant="outline" asChild>
+            <a href="/api/objects/export">Export data</a>
+          </Button>
+
+          <Button asChild>
+            <Link href="/objects/add">Add Object</Link>
+          </Button>
         </div>
       </div>
 

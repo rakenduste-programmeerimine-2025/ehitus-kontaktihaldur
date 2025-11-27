@@ -1,3 +1,4 @@
+
 "use client"
 
 import { createObject, type ObjectFormState } from "@/app/objects/actions"
@@ -11,6 +12,19 @@ const initialState: ObjectFormState = {
   success: false,
   message: "",
 }
+
+// YYYY-MM-DD 
+function formatDate(date: Date): string {
+  return date.toISOString().split("T")[0]
+}
+
+// Today and +1 month
+const today = new Date()
+const oneMonthLater = new Date()
+oneMonthLater.setMonth(oneMonthLater.getMonth() + 1)
+
+const defaultStartDate = formatDate(today)
+const defaultEndDate = formatDate(oneMonthLater)
 
 export default function AddObjectForm() {
   const [state, formAction] = useActionState(createObject, initialState)
@@ -42,32 +56,43 @@ export default function AddObjectForm() {
           <Input id="location" name="location" placeholder="Full address" />
         </div>
 
-        {/* Start Date */}
+        {/* Start Date – defaults to today */}
         <div className="space-y-1">
           <Label htmlFor="startdate">Start Date</Label>
-          <Input id="startdate" name="startdate" type="date" />
+          <Input
+            id="startdate"
+            name="startdate"
+            type="date"
+            defaultValue={defaultStartDate}
+          />
         </div>
 
-        {/* End Date */}
+        {/* End Date – defaults to +1 month */}
         <div className="space-y-1">
           <Label htmlFor="enddate">End Date</Label>
-          <Input id="enddate" name="enddate" type="date" />
+          <Input
+            id="enddate"
+            name="enddate"
+            type="date"
+            defaultValue={defaultEndDate}
+          />
         </div>
 
-        {/* Isactive */}
+        {/* isactive checkbox – checked = active */}
         <div className="flex items-center space-x-2 md:col-span-2">
           <input
             id="isactive"
             name="isactive"
             type="checkbox"
+            defaultChecked={true} 
             className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
           />
           <Label htmlFor="isactive" className="cursor-pointer font-normal">
-            Object is active
+            Active
           </Label>
         </div>
 
-        {/* Description – using <Input> as a textarea (works perfectly) */}
+        {/* Description */}
         <div className="md:col-span-2 space-y-1">
           <Label htmlFor="description">Description</Label>
           <Input
@@ -75,9 +100,7 @@ export default function AddObjectForm() {
             name="description"
             placeholder="Detailed description..."
             className="min-h-32 resize-none"
-            // This trick makes Input behave like a textarea
-            as="textarea"
-            // @ts-ignore – shadcn Input accepts any HTML input/textarea props
+
             rows={5}
           />
         </div>
