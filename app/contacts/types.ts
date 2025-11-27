@@ -19,6 +19,7 @@ export type ObjectHistoryRow = {
   contact_id: number
   from_date: string | null
   to_date: string | null
+  object_id: number | null
   object_name: string | null
   rating: number | null
   reviewtext: string | null
