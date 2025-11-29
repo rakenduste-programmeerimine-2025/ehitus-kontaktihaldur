@@ -1,4 +1,4 @@
-// kasutatud veidi aid
+// app/objects/[id]/page.tsx  (your single object view page)
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { fmt, objectStatus } from "@/app/objects/utils";
@@ -7,6 +7,7 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { User, DollarSign } from "lucide-react";
+import AddWorkersForm from "@/components/objects/workers-manager";  
 
 export default async function ObjectDetailPage({
   params,
@@ -38,13 +39,24 @@ export default async function ObjectDetailPage({
   const { data: workers, error: workersError } = await supabase
     .from("object_with_workers")
     .select("contact, contactid, ispaid")
-    .eq("id", idNum)                
+    .eq("id", idNum)
     .order("contact", { ascending: true });
 
   if (workersError) {
     console.error("Error loading workers:", workersError);
-
   }
+
+  // NEW: Fetch all contacts for adding
+  const { data: allContacts, error: contactsError } = await supabase
+    .from("contact")
+    .select("id, name")
+    .order("name", { ascending: true });
+
+  if (contactsError) {
+    console.error("Error loading contacts:", contactsError);
+  }
+
+  const currentWorkerIds = workers ? workers.map(w => w.contactid) : []
 
   const status = objectStatus(object);
 
@@ -68,7 +80,6 @@ export default async function ObjectDetailPage({
         </div>
       </div>
 
-
       <div className="grid gap-6 md:grid-cols-2">
         <div className="space-y-4">
           <div>
@@ -77,19 +88,14 @@ export default async function ObjectDetailPage({
           </div>
           <div>
             <h2 className="text-sm font-medium text-muted-foreground">Period</h2>
-            <p className="mt-1">{fmt(object.startdate)} – {fmt(object.enddate)}</p>
+            <p className="mt-1">{fmt(object.startdate) ?? "—"} to {fmt(object.enddate) ?? "—"}</p>
           </div>
           <div>
             <h2 className="text-sm font-medium text-muted-foreground">Status</h2>
-            <div className="mt-1">
-              {status === "Active" && <Badge className="bg-emerald-600 text-white">Active</Badge>}
-              {status === "Passive" && <Badge variant="secondary">Passive</Badge>}
-              {status === "—" && <span className="text-muted-foreground">—</span>}
-            </div>
+            <Badge variant={status.variant} className="mt-1">
+              {status.text}
+            </Badge>
           </div>
-        </div>
-
-        <div className="space-y-4">
           <div>
             <h2 className="text-sm font-medium text-muted-foreground">Description</h2>
             <p className="mt-1 whitespace-pre-wrap">{object.description ?? "—"}</p>
@@ -97,66 +103,77 @@ export default async function ObjectDetailPage({
         </div>
       </div>
 
-      {/* töötajate kaart */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <User className="w-5 h-5" />
-            Workers on Site
-            <Badge variant="outline" className="ml-auto">
-              {workers?.length ?? 0}
-            </Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {(!workers || workers.length === 0) ? (
-            <p className="text-muted-foreground italic">
-              No workers assigned to this object yet.
-            </p>
-          ) : (
-            <div className="space-y-3">
-              {workers.map((worker) => (
-                <Link
-                  key={worker.contactid}
-                  href={`/contacts/${worker.contactid}`}
-                  className="block"
-                >
-                  <div className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-accent/5 hover:border-accent transition-all">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                        <User className="w-5 h-5 text-primary" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-foreground hover:underline">
-                          {worker.contact || "Unnamed contact"}
-                        </p>
-                      </div>
-                    </div>
+     {/* töötajate kaart */}
+<Card>
+  <CardHeader>
+    <div className="flex items-center justify-between">
+      {/* Left side: title + counter */}
+      <CardTitle className="flex items-center gap-2">
+        <User className="w-5 h-5" />
+        Workers on Site
+        <Badge variant="outline" className="ml-2">
+          {workers?.length ?? 0}
+        </Badge>
+      </CardTitle>
 
-                    <div className="flex items-center gap-2">
-                      {worker.ispaid !== null && (
-                        <Badge variant={worker.ispaid ? "default" : "secondary"}>
-                          {worker.ispaid ? (
-                            <>
-                              <DollarSign className="w-3 h-3 mr-1" />
-                              Paid
-                            </>
-                          ) : (
-                            "Unpaid"
-                          )}
-                        </Badge>
-                      )}
-                      <span className="text-xs text-muted-foreground">
-                        → View details
-                      </span>
-                    </div>
-                  </div>
-                </Link>
-              ))}
+<Button asChild variant="default" size="sm">
+  <Link href={`/objects/${object.id}/workers`}>
+    Manage Workers
+  </Link>
+</Button>
+    </div>
+  </CardHeader>
+
+  <CardContent>
+    {/* rest of your worker list stays exactly the same */}
+    {(!workers || workers.length === 0) ? (
+      <p className="text-muted-foreground italic">
+        No workers assigned to this object yet.
+      </p>
+    ) : (
+      <div className="space-y-3">
+        {workers.map((worker) => (
+          <Link
+            key={worker.contactid}
+            href={`/contacts/${worker.contactid}`}
+            className="block"
+          >
+            <div className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-accent/5 hover:border-accent transition-all">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  <User className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <p className="font-medium text-foreground hover:underline">
+                    {worker.contact || "Unnamed contact"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                {worker.ispaid !== null && (
+                  <Badge variant={worker.ispaid ? "default" : "secondary"}>
+                    {worker.ispaid ? (
+                      <>
+                        <DollarSign className="w-3 h-3 mr-1" />
+                        Paid
+                      </>
+                    ) : (
+                      "Unpaid"
+                    )}
+                  </Badge>
+                )}
+                <span className="text-xs text-muted-foreground">
+                  → View details
+                </span>
+              </div>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </Link>
+        ))}
+      </div>
+    )}
+  </CardContent>
+</Card>
     </div>
   );
 }
