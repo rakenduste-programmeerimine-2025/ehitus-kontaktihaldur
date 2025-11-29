@@ -2,6 +2,8 @@
 import { notFound, redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import WorkersManager from "@/components/objects/workers-manager"
+import { Button } from "@/components/ui/button";
+import Link from "next/link"
 
 export default async function ObjectWorkersPage({
   params,
@@ -42,20 +44,30 @@ export default async function ObjectWorkersPage({
 
   const currentContactIds = new Set(currentWorkers?.map(w => w.fk_contact_id) || [])
 
-  return (
-    <div className="mx-auto max-w-4xl px-4 py-10">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">Manage Workers</h1>
-        <p className="text-muted-foreground mt-2">
-          Object: <span className="font-medium">{object.name}</span>
-        </p>
-      </div>
+return (
+  <div className="mx-auto max-w-4xl px-4 py-10">
+    <div className="mb-10">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Manage Workers</h1>
+          <p className="text-muted-foreground mt-2">
+            Object: <span className="font-medium">{object.name}</span>
+          </p>
+        </div>
 
-      <WorkersManager
-        objectId={objectId}
-        allContacts={allContacts || []}
-        currentContactIds={currentContactIds}
-      />
+        <Button asChild variant="outline" size="sm">
+          <Link href={`/objects/${objectId}`}>
+            Back to Object
+          </Link>
+        </Button>
+      </div>
     </div>
-  )
+
+    <WorkersManager
+      objectId={objectId}
+      allContacts={allContacts || []}
+      currentContactIds={currentContactIds}
+    />
+  </div>
+)
 }

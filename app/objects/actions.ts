@@ -99,6 +99,7 @@ export async function addWorkerToObject(
     return { success: false, message: "Invalid data" }
   }
 
+  // Just insert — if it already exists, Supabase will return error 23505 → we ignore it
   const { error } = await supabase
     .from("workingon")
     .insert({
@@ -106,9 +107,9 @@ export async function addWorkerToObject(
       fk_contact_id: contactId,
       ispaid: false,
     })
-    .ignoreDuplicates() 
 
-  if (error && error.code !== "23505") { 
+  // 23505 = unique violation → means worker is already assigned → totally fine
+  if (error && error.code !== "23505") {
     return { success: false, message: error.message }
   }
 
@@ -129,13 +130,17 @@ export async function removeWorkerFromObject(
     return { success: false, message: "Invalid data" }
   }
 
+
   const { error } = await supabase
     .from("workingon")
     .delete()
     .eq("fk_object_id", objectId)
     .eq("fk_contact_id", contactId)
 
-  if (error) return { success: false, message: error.message }
+  if (error) {
+    console.error("Remove worker error:", error)
+    return { success: false, message: error.message || "Failed to remove" }
+  }
 
   return { success: true, message: "Worker removed" }
 }
