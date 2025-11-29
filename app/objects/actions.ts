@@ -3,6 +3,7 @@
 
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
+import { revalidatePath } from "next/cache"
 
 export type ObjectFormState = {
   success: boolean
@@ -143,4 +144,50 @@ export async function removeWorkerFromObject(
   }
 
   return { success: true, message: "Worker removed" }
+}
+
+
+export async function updateWorkersAction(
+  _: ObjectFormState,
+  formData: FormData
+): Promise<ObjectFormState> {
+  "use server"
+
+  const supabase = await createClient()
+  const objectId = Number(formData.get("objectId"))
+  const contactIds = (formData.get("contactIds") as string)
+    .split(",")
+    .map(Number)
+    .filter(n => !isNaN(n))
+
+  if (isNaN(objectId)) {
+    return { success: false, message: "Invalid object" }
+  }
+
+  // 1. delete olemasolevad
+  const { error: deleteError } = await supabase
+    .from("workingon")
+    .delete()
+    .eq("fk_object_id", objectId)
+
+  if (deleteError) return { success: false, message: deleteError.message }
+
+  // 2. lisa uued
+  if (contactIds.length > 0) {
+    const inserts = contactIds.map(id => ({
+      fk_object_id: objectId,
+      fk_contact_id: id,
+      ispaid: false,
+    }))
+
+    const { error: insertError } = await supabase
+      .from("workingon")
+      .insert(inserts)
+
+    if (insertError) return { success: false, message: insertError.message }
+  }
+
+  revalidatePath(`/objects/${objectId}`)
+  revalidatePath(`/objects/${objectId}/workers`)
+  return { success: true, message: "Workers updated" }
 }
