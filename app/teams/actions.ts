@@ -232,3 +232,56 @@ export async function renameTeam(teamId: number, newName: string) {
 
   revalidatePath(`/teams/${teamId}`)
 }
+
+export async function leaveTeam(teamId: number) {
+  const supabase = await createClient()
+
+  const {
+    data: { user }
+  } = await supabase.auth.getUser()
+
+  if (!user) return { success: false, message: "Not authenticated." }
+
+  const { data: selfMember } = await supabase
+    .from("team_member")
+    .select("*")
+    .eq("team_id", teamId)
+    .eq("user_id", user.id)
+    .single()
+
+  if (!selfMember) {
+    return { success: false, message: "You are not a member of this team." }
+  }
+
+  const { data: allMembers } = await supabase
+    .from("team_member")
+    .select("id, role_id, user_id")
+    .eq("team_id", teamId)
+
+  if (!allMembers) {
+    return { success: false, message: "Could not fetch team members." }
+  }
+
+  const memberCount = allMembers.length
+  const adminCount = allMembers.filter(m => m.role_id === 1).length
+
+  if (memberCount === 1) {
+    await supabase.from("team_member").delete().eq("id", selfMember.id)
+    await supabase.from("team").delete().eq("id", teamId)
+
+    revalidatePath("/teams")
+    return { success: true, deletedTeam: true }
+  }
+
+  if (selfMember.role_id === 1 && adminCount === 1) {
+    return {
+      success: false,
+      message: "You are the only admin. Assign another admin before leaving."
+    }
+  }
+
+  await supabase.from("team_member").delete().eq("id", selfMember.id)
+
+  revalidatePath("/teams")
+  return { success: true }
+}

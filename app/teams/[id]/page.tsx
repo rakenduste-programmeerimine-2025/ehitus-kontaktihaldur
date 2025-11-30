@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { TeamMembersTable } from "@/components/teams/team-members-table"
 import { RegenerateButton } from "@/components/teams/regenerate-button"
+import { LeaveTeamButton } from "@/components/teams/leave-team-button"
 
 function normalize<T>(rel: T | T[] | null): T | null {
   if (!rel) return null
@@ -105,6 +106,9 @@ export default async function SingleTeamPage({
 
   const isAdmin = current.role === "ADMIN"
 
+  const adminCount = approved.filter(m => m.role === "ADMIN").length
+  const memberCount = approved.length
+
   return (
     <main className="max-w-5xl mx-auto p-6">
       <Link
@@ -115,6 +119,13 @@ export default async function SingleTeamPage({
       </Link>
 
       <h1 className="text-3xl font-bold mt-6">{team.name}</h1>
+
+      <LeaveTeamButton
+        teamId={team.id}
+        isAdmin={current.role === "ADMIN"}
+        isSoloAdmin={adminCount === 1}
+        isOnlyMember={memberCount === 1}
+      />
 
       {isAdmin && (
         <div className="mt-6 p-4 border rounded bg-blue-50">
