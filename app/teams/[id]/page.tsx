@@ -143,6 +143,9 @@ export default async function SingleTeamPage({
       <TeamMembersTable
         title="Approved Members"
         members={approved}
+        currentUserId={auth.user.id}
+        currentUserRole={current.role}
+        canEditRoles={true}
       />
 
       {isAdmin && (
@@ -150,6 +153,9 @@ export default async function SingleTeamPage({
           title="Pending Requests"
           members={pending}
           pending
+          currentUserId={auth.user.id}
+          currentUserRole={current.role}
+          canEditRoles={false}
         />
       )}
     </main>
