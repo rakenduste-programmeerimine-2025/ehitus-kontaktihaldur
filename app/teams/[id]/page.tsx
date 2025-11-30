@@ -146,6 +146,7 @@ export default async function SingleTeamPage({
         currentUserId={auth.user.id}
         currentUserRole={current.role}
         canEditRoles={true}
+        teamId={teamId}
       />
 
       {isAdmin && (
@@ -156,6 +157,7 @@ export default async function SingleTeamPage({
           currentUserId={auth.user.id}
           currentUserRole={current.role}
           canEditRoles={false}
+          teamId={teamId}
         />
       )}
     </main>
