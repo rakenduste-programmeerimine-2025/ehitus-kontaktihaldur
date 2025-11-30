@@ -2,6 +2,7 @@
 
 import { useTransition } from "react"
 import { changeRole } from "@/app/teams/actions"
+import { RemoveMemberButton } from "./remove-member-button"
 
 type MemberRow = {
   id: number
@@ -17,11 +18,13 @@ const roles = ["ADMIN", "EDITOR", "VIEWER"]
 
 export function TeamMemberRow({
   m,
+  teamId,
   currentUserId,
   currentUserRole,
   canEditRoles,
 }: {
   m: MemberRow
+  teamId: number
   currentUserId: string
   currentUserRole: string
   canEditRoles?: boolean
@@ -32,6 +35,7 @@ export function TeamMemberRow({
   const isCurrentUserAdmin = currentUserRole === "ADMIN"
 
   const canEdit = canEditRoles && isCurrentUserAdmin && !isSelf
+  const isTargetAdmin = m.role === "ADMIN"
 
   return (
     <tr className="border-b">
@@ -68,6 +72,18 @@ export function TeamMemberRow({
 
       <td className="px-4 py-3 text-neutral-500">
         {new Date(m.joined_at).toLocaleString()}
+      </td>
+
+      <td className="px-4 py-3 text-right">
+        {isCurrentUserAdmin && !isSelf && (
+          <RemoveMemberButton
+            memberId={m.id}
+            teamId={teamId}
+            disabled={isTargetAdmin}
+            isAdminTarget={isTargetAdmin}
+            onSuccess={() => {}}
+          />
+        )}
       </td>
     </tr>
   )

@@ -20,6 +20,7 @@ type Props = {
   currentUserId: string
   currentUserRole: string
   canEditRoles?: boolean
+  teamId: number
 }
 
 export function TeamMembersTable({
@@ -29,6 +30,7 @@ export function TeamMembersTable({
   currentUserId,
   currentUserRole,
   canEditRoles = false,
+  teamId,
 }: Props) {
   return (
     <section className="mt-12">
@@ -45,6 +47,7 @@ export function TeamMembersTable({
               <th className="px-4 py-3 text-left">Role</th>
               <th className="px-4 py-3 text-left">Status</th>
               <th className="px-4 py-3 text-left">Joined</th>
+              <th className="px-4 py-3 text-left">Actions</th>
             </tr>
           </thead>
 
@@ -59,6 +62,7 @@ export function TeamMembersTable({
                 <TeamMemberRow
                   key={m.id}
                   m={m}
+                  teamId={teamId}
                   currentUserId={currentUserId}
                   currentUserRole={currentUserRole}
                   canEditRoles={canEditRoles}
