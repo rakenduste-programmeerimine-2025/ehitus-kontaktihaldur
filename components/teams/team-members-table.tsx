@@ -17,9 +17,19 @@ type Props = {
   title: string
   members: MemberRow[]
   pending?: boolean
+  currentUserId: string
+  currentUserRole: string
+  canEditRoles?: boolean
 }
 
-export function TeamMembersTable({ title, members, pending = false }: Props) {
+export function TeamMembersTable({
+  title,
+  members,
+  pending = false,
+  currentUserId,
+  currentUserRole,
+  canEditRoles = false,
+}: Props) {
   return (
     <section className="mt-12">
       <h2 className="text-xl font-semibold mb-4">{title}</h2>
@@ -35,17 +45,25 @@ export function TeamMembersTable({ title, members, pending = false }: Props) {
               <th className="px-4 py-3 text-left">Role</th>
               <th className="px-4 py-3 text-left">Status</th>
               <th className="px-4 py-3 text-left">Joined</th>
-              {pending && <th className="px-4 py-3 text-left">Actions</th>}
             </tr>
           </thead>
 
           <tbody>
-            {members.map((m) =>
+            {members.map(m =>
               pending ? (
-                <PendingMemberRow key={m.id} m={m} />
+                <PendingMemberRow
+                  key={m.id}
+                  m={m}
+                />
               ) : (
-                <TeamMemberRow key={m.id} m={m} />
-              )
+                <TeamMemberRow
+                  key={m.id}
+                  m={m}
+                  currentUserId={currentUserId}
+                  currentUserRole={currentUserRole}
+                  canEditRoles={canEditRoles}
+                />
+              ),
             )}
           </tbody>
         </table>
