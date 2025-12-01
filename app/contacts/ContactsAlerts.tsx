@@ -1,18 +1,21 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useRef } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { toast } from "sonner"
 
 export function ContactsAlerts() {
   const searchParams = useSearchParams()
   const router = useRouter()
+  const shown = useRef(false)
 
   useEffect(() => {
     const deleted = searchParams.get("deleted")
     const name = searchParams.get("name")
 
-    if (deleted === "1") {
+    if (!shown.current && deleted === "1") {
+      shown.current = true
+
       if (name) {
         toast.success(`Contact "${name}" deleted successfully`)
       } else {
