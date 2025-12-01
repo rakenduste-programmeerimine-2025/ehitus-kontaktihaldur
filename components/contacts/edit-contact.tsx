@@ -118,15 +118,6 @@ export default function EditContact({ contact, history, objects }: Props) {
           </div>
 
           <div className="space-y-1">
-            <Label>Blacklist</Label>
-            <input
-              type="checkbox"
-              name="isblacklist"
-              defaultChecked={contact.isblacklist}
-            />
-          </div>
-
-          <div className="space-y-1">
             <Label>Cost</Label>
             <Input
               type="number"

@@ -9,7 +9,7 @@ export function toBool(v: FormDataEntryValue | null): boolean | null {
 }
 
 export function fmt(d?: string | null) {
-  if (!d) return "—"
+  if (!d) return ""
   const x = new Date(d)
   if (Number.isNaN(x.valueOf())) return d!
   return x.toLocaleDateString()
@@ -21,7 +21,7 @@ export function workingStatus(c: Contact) {
   const from = c.workingfrom ? new Date(c.workingfrom) : null
   const to = c.workingto ? new Date(c.workingto) : null
 
-  if (!from && !to) return "—"
+  if (!from && !to) return ""
 
   if (from && !to) {
     return "Active"

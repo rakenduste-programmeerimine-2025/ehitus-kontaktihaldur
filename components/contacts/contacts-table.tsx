@@ -2,6 +2,7 @@ import Link from "next/link"
 import { fmt, workingStatus } from "@/app/contacts/utils"
 import { toggleFavorite } from "@/app/contacts/actions"
 import type { Contact } from "@/app/contacts/types"
+import { Star } from "lucide-react"
 
 export default function ContactsTable({ contacts }: { contacts: Contact[] }) {
   return (
@@ -9,7 +10,7 @@ export default function ContactsTable({ contacts }: { contacts: Contact[] }) {
       <table className="w-full text-sm">
         <thead className="bg-muted/40">
           <tr>
-            <th className="text-left p-3 w-[36px]">★</th>
+            <th className="text-left p-3 w-[36px]">Favorite</th>
             <th className="text-left p-3">Name</th>
             <th className="text-left p-3">Role</th>
             <th className="text-left p-3">Object</th>
@@ -22,13 +23,23 @@ export default function ContactsTable({ contacts }: { contacts: Contact[] }) {
           {contacts.map(c => {
             const status = workingStatus(c)
 
+            const workingPeriod =
+              c.workingfrom || c.workingto
+                ? `${fmt(c.workingfrom)}${
+                    c.workingfrom || c.workingto ? " – " : ""
+                  }${fmt(c.workingto)}`
+                : ""
+
             return (
               <tr
                 key={c.id}
                 className="border-t"
               >
                 <td className="p-3">
-                  <form action={toggleFavorite}>
+                  <form
+                    action={toggleFavorite}
+                    className="flex items-center"
+                  >
                     <input
                       type="hidden"
                       name="id"
@@ -39,8 +50,13 @@ export default function ContactsTable({ contacts }: { contacts: Contact[] }) {
                       name="value"
                       value={(!c.isfavorite).toString()}
                     />
-                    <button className="rounded px-2 py-1 hover:bg-muted">
-                      {c.isfavorite ? "★" : "☆"}
+
+                    <button className="rounded p-1 hover:bg-muted">
+                      {c.isfavorite ? (
+                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-500" />
+                      ) : (
+                        <Star className="h-4 w-4 text-gray-300" />
+                      )}
                     </button>
                   </form>
                 </td>
@@ -54,14 +70,11 @@ export default function ContactsTable({ contacts }: { contacts: Contact[] }) {
                   </Link>
                 </td>
 
-                <td className="p-3 text-muted-foreground">{c.roles ?? "—"}</td>
-                <td className="p-3 text-muted-foreground">
-                  {c.objects ?? "—"}
-                </td>
+                <td className="p-3 text-muted-foreground">{c.roles || ""}</td>
 
-                <td className="p-3 text-muted-foreground">
-                  {fmt(c.workingfrom)} – {fmt(c.workingto)}
-                </td>
+                <td className="p-3 text-muted-foreground">{c.objects || ""}</td>
+
+                <td className="p-3 text-muted-foreground">{workingPeriod}</td>
 
                 <td className="p-3">
                   {status === "Active" && (
@@ -69,23 +82,23 @@ export default function ContactsTable({ contacts }: { contacts: Contact[] }) {
                       Active
                     </span>
                   )}
+
                   {status === "Passive" && (
                     <span className="inline-flex items-center rounded bg-muted px-2 py-0.5 text-xs">
                       Passive
                     </span>
-                  )}
-                  {status === "—" && (
-                    <span className="text-muted-foreground">—</span>
                   )}
                 </td>
 
                 <td className="p-3">
                   {c.isblacklist ? (
                     <span className="inline-flex items-center rounded bg-red-600 text-white px-2 py-0.5 text-xs">
-                      Yes
+                      Blacklisted
                     </span>
                   ) : (
-                    <span className="text-muted-foreground">—</span>
+                    <span className="inline-flex items-center rounded bg-muted px-2 py-0.5 text-xs">
+                      Whitelisted
+                    </span>
                   )}
                 </td>
               </tr>

@@ -5,6 +5,7 @@ import { toggleBlacklist, deleteContact } from "@/app/contacts/actions"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft } from "lucide-react"
 import { ObjectHistory } from "@/components/contacts/object-history"
+import { Star } from "lucide-react"
 
 type Props = {
   contact: Contact
@@ -13,6 +14,13 @@ type Props = {
 
 export function SingleContact({ contact: c, history }: Props) {
   const status = workingStatus(c)
+
+  const workingPeriod =
+    c.workingfrom || c.workingto
+      ? `${fmt(c.workingfrom)}${c.workingfrom || c.workingto ? " – " : ""}${fmt(
+          c.workingto,
+        )}`
+      : ""
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-8">
@@ -31,9 +39,14 @@ export function SingleContact({ contact: c, history }: Props) {
           </Link>
         </Button>
       </div>
+
       <div className="flex items-center justify-between gap-4 mb-6">
-        <div>
+        <div className="flex items-center gap-2">
           <h1 className="text-3xl font-semibold">{c.name}</h1>
+
+          {c.isfavorite && (
+            <Star className="h-5 w-5 fill-yellow-400 text-yellow-500" />
+          )}
         </div>
 
         <div className="flex items-center gap-2">
@@ -48,6 +61,7 @@ export function SingleContact({ contact: c, history }: Props) {
               name="value"
               value={(!c.isblacklist).toString()}
             />
+
             <button
               type="submit"
               className="inline-flex items-center rounded-md border px-3 py-2 text-sm hover:bg-muted"
@@ -96,31 +110,29 @@ export function SingleContact({ contact: c, history }: Props) {
 
             <div>
               <div className="text-muted-foreground text-xs">Email</div>
-              <div>{c.email ?? "—"}</div>
+              <div>{c.email || ""}</div>
             </div>
 
             <div>
               <div className="text-muted-foreground text-xs">Phone Number</div>
-              <div>{c.number ?? "—"}</div>
+              <div>{c.number || ""}</div>
             </div>
 
             <div>
               <div className="text-muted-foreground text-xs">Role</div>
-              <div>{c.roles ?? "—"}</div>
+              <div>{c.roles || ""}</div>
             </div>
 
             <div>
               <div className="text-muted-foreground text-xs">Object</div>
-              <div>{c.objects ?? "—"}</div>
+              <div>{c.objects || ""}</div>
             </div>
 
             <div>
               <div className="text-muted-foreground text-xs">
                 Working Period
               </div>
-              <div>
-                {fmt(c.workingfrom)} – {fmt(c.workingto)}
-              </div>
+              <div>{workingPeriod}</div>
             </div>
 
             <div>
@@ -131,20 +143,18 @@ export function SingleContact({ contact: c, history }: Props) {
                     Active
                   </span>
                 )}
+
                 {status === "Passive" && (
                   <span className="inline-flex items-center rounded bg-muted px-2 py-0.5 text-xs">
                     Passive
                   </span>
-                )}
-                {status === "—" && (
-                  <span className="text-muted-foreground">—</span>
                 )}
               </div>
             </div>
 
             <div>
               <div className="text-muted-foreground text-xs">Cost</div>
-              <div>{c.cost ?? "—"}</div>
+              <div>{c.cost || ""}</div>
             </div>
 
             <div>
@@ -155,7 +165,9 @@ export function SingleContact({ contact: c, history }: Props) {
                     Blacklisted
                   </span>
                 ) : (
-                  <span className="text-muted-foreground">—</span>
+                  <span className="inline-flex items-center rounded bg-muted px-2 py-0.5 text-xs">
+                    Whitelisted
+                  </span>
                 )}
               </div>
             </div>
