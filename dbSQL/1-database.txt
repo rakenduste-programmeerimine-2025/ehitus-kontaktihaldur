@@ -231,6 +231,7 @@ CREATE OR REPLACE FUNCTION update_full_contact_with_history(
   p_workingto date,
   p_cost real,
   p_isblacklist boolean,
+  p_isfavorite boolean,
   p_user_id uuid,
   p_history jsonb
 )
@@ -248,16 +249,15 @@ BEGIN
       cost = p_cost,
       workingfrom = p_workingfrom,
       workingto = p_workingto,
-      isblacklist = p_isblacklist
+      isblacklist = p_isblacklist,
+      isfavorite = p_isfavorite
   WHERE id = p_contact_id
     AND user_id = p_user_id;
 
   FOR rec IN 
-    SELECT * FROM jsonb_to_recordset(p_history)
-    ( workingon_id bigint,
-      object_name text,
-      rating smallint,
-      reviewtext text )
+    SELECT *
+    FROM jsonb_to_recordset(p_history)
+      AS t(workingon_id bigint, object_name text, rating smallint, reviewtext text)
   LOOP
 
     SELECT fk_object_id
@@ -265,7 +265,7 @@ BEGIN
       FROM workingon
       WHERE id = rec.workingon_id;
 
-    UPDATE objects
+    UPDATE object
       SET name = rec.object_name
       WHERE id = v_object_id;
 
@@ -287,6 +287,7 @@ BEGIN
 
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
 
 --DELETE CONTACT
 create or replace function delete_full_contact(p_contact_id bigint)
