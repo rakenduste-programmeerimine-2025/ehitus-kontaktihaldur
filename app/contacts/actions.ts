@@ -125,7 +125,6 @@ export async function updateContact(
   const { data: { user } } = await sb.auth.getUser()
   if (!user) return { success: false, message: "Not logged in." }
 
-  // ⭐ LOEME FAVORITE ANDMEBAASIST
   const { data: favRow } = await sb
     .from("contacts")
     .select("isfavorite")
