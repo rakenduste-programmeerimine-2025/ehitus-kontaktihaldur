@@ -4,11 +4,7 @@ import { useEffect } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { toast } from "sonner"
 
-type Props = {
-  children: React.ReactNode
-}
-
-export function ContactsAlerts({ children }: Props) {
+export function ContactsAlerts() {
   const searchParams = useSearchParams()
   const router = useRouter()
 
@@ -32,5 +28,5 @@ export function ContactsAlerts({ children }: Props) {
     }
   }, [searchParams, router])
 
-  return <>{children}</>
+  return null
 }

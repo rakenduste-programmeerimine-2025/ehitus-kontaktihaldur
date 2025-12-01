@@ -16,16 +16,21 @@ export default async function ContactsPage({
   const {
     data: { session },
   } = await supabase.auth.getSession()
+
   if (!session) redirect("/auth/login")
 
   const sp = await searchParams
   const contacts = await getContacts(sp)
 
   return (
-    <ContactsAlerts>
+    <>
+  
+      <ContactsAlerts />
+
       <div className="mx-auto max-w-6xl px-4 py-8 space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-semibold">Contacts list</h1>
+
           <div className="flex gap-2">
             <a
               href="/api/contacts/export"
@@ -45,6 +50,6 @@ export default async function ContactsPage({
         <FilterForm sp={sp} />
         <ContactsTable contacts={contacts} />
       </div>
-    </ContactsAlerts>
+    </>
   )
 }

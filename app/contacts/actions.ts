@@ -125,7 +125,18 @@ export async function updateContact(
   const { data: { user } } = await sb.auth.getUser()
   if (!user) return { success: false, message: "Not logged in." }
 
-  const history = []
+  // ⭐ LOEME FAVORITE ANDMEBAASIST
+  const { data: favRow } = await sb
+    .from("contacts")
+    .select("isfavorite")
+    .eq("id", id)
+    .single()
+
+  const isfavorite = favRow?.isfavorite ?? false
+
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const history: any[] = []
   let index = 0
 
   while (true) {
@@ -153,6 +164,7 @@ export async function updateContact(
     p_workingto: workingto,
     p_cost: cost,
     p_isblacklist: isblacklist,
+    p_isfavorite: isfavorite,  
     p_user_id: user.id,
     p_history: history
   })
