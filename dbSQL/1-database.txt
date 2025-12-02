@@ -344,3 +344,15 @@ ADD COLUMN team_id BIGINT NULL REFERENCES public.team(id);
 
 ALTER TABLE public.object
 ADD COLUMN team_id BIGINT NULL REFERENCES public.team(id);
+
+create table tasks (
+  id uuid primary key default uuid_generate_v4(),
+  object_id int references object(id) on delete cascade,
+  title text not null,
+  is_done boolean default false,
+  created_at timestamp with time zone default now(),
+  updated_at timestamp with time zone default now()
+);
+
+-- 
+alter table tasks disable row level security;
