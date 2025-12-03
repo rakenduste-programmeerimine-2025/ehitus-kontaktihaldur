@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/popover"
 import { ChevronDown, UsersRound, User2 } from "lucide-react"
 
-type SimpleTeam = { id: number; name: string }
+export type SimpleTeam = { id: number; name: string }
 
 type MemberRow = {
   team_id: number
@@ -25,40 +25,52 @@ export function TeamSwitcher() {
   const [teams, setTeams] = useState<SimpleTeam[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    const loadTeams = async () => {
-      const result = (await supabase.from("team_member").select(`
-          team_id,
-          team:team_id ( id, name ),
-          status:status_id ( name )
-        `)) as unknown as // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      { data: MemberRow[] | null; error: any }
+  const [userLoaded, setUserLoaded] = useState(false)
+  const [userId, setUserId] = useState<string | null>(null)
 
-      const { data, error } = result
-      if (error) {
-        console.error(error)
+  useEffect(() => {
+    const load = async () => {
+      const { data: userData } = await supabase.auth.getUser()
+      const uid = userData.user?.id ?? null
+      setUserId(uid)
+      setUserLoaded(true)
+
+      if (!uid) {
+        setTeams([])
         setLoading(false)
         return
       }
 
-      const rows = data ?? []
+      const result = await supabase
+        .from("team_member")
+        .select(
+          `
+          team_id,
+          team:team_id ( id, name ),
+          status:status_id ( name )
+        `,
+        )
+        .eq("user_id", uid)
+
+      const rows = (result.data ?? []) as unknown as MemberRow[]
 
       const approved = rows
         .filter(r => r.status?.name === "APPROVED" && r.team !== null)
-        .map(r => ({
-          id: r.team!.id,
-          name: r.team!.name,
-        }))
+        .map(r => ({ id: r.team!.id, name: r.team!.name }))
 
       const unique = Array.from(new Map(approved.map(t => [t.id, t])).values())
 
       setTeams(unique)
-
       setLoading(false)
     }
 
-    loadTeams()
-  }, [supabase])
+    load()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  if (!userLoaded) return null
+
+  if (!userId) return null
 
   const currentLabel = activeTeam?.name || "Personal"
 
@@ -80,7 +92,6 @@ export function TeamSwitcher() {
 
       <PopoverContent className="w-56 p-2 z-[9999]">
         <button
-          key="team-personal"
           onClick={() => setActiveTeam(null)}
           className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm hover:bg-accent text-left ${
             activeTeam === null ? "bg-accent font-medium" : ""
