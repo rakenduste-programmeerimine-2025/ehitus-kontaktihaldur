@@ -14,6 +14,7 @@ import {
 import { createClient } from "@/lib/supabase/client"
 import { useEffect, useState } from "react"
 import type { User } from "@supabase/supabase-js"
+import { TeamSwitcher } from "@/components/teams/team-switch"
 
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   const [user, setUser] = useState<User | null>(null)
@@ -46,6 +47,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
     >
       <SidebarHeader>
         <SidebarTrigger className="absolute -right-10 top-3 z-50 bg-background border border-border rounded-md shadow hover:bg-muted transition" />
+        <TeamSwitcher />
       </SidebarHeader>
 
       <SidebarContent>

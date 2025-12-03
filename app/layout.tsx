@@ -5,6 +5,7 @@ import "./globals.css"
 import { AppSidebar } from "@/components/app-sidebar"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { Toaster } from "@/components/ui/sonner"
+import { TeamProvider } from "@/components/team-context"
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -42,29 +43,31 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <SidebarProvider>
-            <div className="flex min-h-screen w-full">
-              <aside className="fixed inset-y-0 left-0 z-[100] h-full w-[200px] border-border bg-background">
-                <AppSidebar />
-              </aside>
-              <main className="flex-1 ml-64 p-8 transition-all duration-300">
-                {children}
-              </main>
-            </div>
-          </SidebarProvider>
-          <Toaster
-            position="top-right"
-            richColors
-            expand
-            closeButton
-            toastOptions={{
-              style: {
-                fontSize: "16px",
-                padding: "14px 18px",
-                borderRadius: "10px",
-              },
-            }}
-          />
+          <TeamProvider>
+            <SidebarProvider>
+              <div className="flex min-h-screen w-full">
+                <aside className="fixed inset-y-0 left-0 z-[100] h-full w-[200px] border-border bg-background">
+                  <AppSidebar />
+                </aside>
+                <main className="flex-1 ml-64 p-8 transition-all duration-300">
+                  {children}
+                </main>
+              </div>
+            </SidebarProvider>
+            <Toaster
+              position="top-right"
+              richColors
+              expand
+              closeButton
+              toastOptions={{
+                style: {
+                  fontSize: "16px",
+                  padding: "14px 18px",
+                  borderRadius: "10px",
+                },
+              }}
+            />
+          </TeamProvider>
         </ThemeProvider>
       </body>
     </html>
