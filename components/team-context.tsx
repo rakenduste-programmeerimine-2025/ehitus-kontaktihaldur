@@ -1,21 +1,66 @@
 "use client"
 
-import { createContext, useContext, useState } from "react"
+import { createContext, useContext, useState, useEffect, useRef } from "react"
+import { createClient } from "@/lib/supabase/client"
 
-export type Team = {
-  id: number
-  name: string
-} | null
+export type SimpleTeam = { id: number; name: string }
 
 type TeamContextType = {
-  activeTeam: Team
-  setActiveTeam: (team: Team) => void
+  activeTeam: SimpleTeam | null
+  setActiveTeam: (team: SimpleTeam | null) => void
 }
 
-const TeamContext = createContext<TeamContextType | undefined>(undefined)
+const TeamContext = createContext<TeamContextType>({
+  activeTeam: null,
+  setActiveTeam: () => {},
+})
 
 export function TeamProvider({ children }: { children: React.ReactNode }) {
-  const [activeTeam, setActiveTeam] = useState<Team>(null)
+  const supabase = createClient()
+
+  const [activeTeam, setActiveTeam] = useState<SimpleTeam | null>(() => {
+    if (typeof window === "undefined") return null
+    const raw = localStorage.getItem("activeTeam")
+    return raw ? JSON.parse(raw) : null
+  })
+
+  useEffect(() => {
+    if (activeTeam) {
+      localStorage.setItem("activeTeam", JSON.stringify(activeTeam))
+    } else {
+      localStorage.removeItem("activeTeam")
+    }
+  }, [activeTeam])
+
+  const previousUserId = useRef<string | null>(null)
+
+  useEffect(() => {
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        const userId = session?.user?.id ?? null
+
+        if (!userId) {
+          previousUserId.current = null
+          setActiveTeam(null)
+          return
+        }
+
+        if (previousUserId.current === null) {
+          previousUserId.current = userId
+          return
+        }
+
+        if (previousUserId.current !== userId) {
+          previousUserId.current = userId
+          setActiveTeam(null)
+          return
+        }
+
+      }
+    )
+
+    return () => listener.subscription.unsubscribe()
+  }, [supabase])
 
   return (
     <TeamContext.Provider value={{ activeTeam, setActiveTeam }}>
@@ -24,8 +69,4 @@ export function TeamProvider({ children }: { children: React.ReactNode }) {
   )
 }
 
-export function useTeam() {
-  const ctx = useContext(TeamContext)
-  if (!ctx) throw new Error("useTeam must be used inside TeamProvider")
-  return ctx
-}
+export const useTeam = () => useContext(TeamContext)
