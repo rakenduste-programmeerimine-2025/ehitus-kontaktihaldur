@@ -20,7 +20,12 @@ export default async function ContactsPage({
   if (!session) redirect("/auth/login")
 
   const sp = await searchParams
-  const contacts = await getContacts(sp)
+  const teamId = sp.team ?? null
+
+  const contacts = await getContacts({
+    ...sp,
+    team: teamId,
+  })
 
   return (
     <>
@@ -30,7 +35,7 @@ export default async function ContactsPage({
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-semibold">Contacts list</h1>
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center">
             <form
               method="GET"
               action="/api/contacts/export"

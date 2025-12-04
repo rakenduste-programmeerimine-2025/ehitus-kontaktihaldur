@@ -36,6 +36,7 @@ export type RawSearchParams = {
   wt_to?: string
   fav?: "1"
   bl?: "1"
+  team?: string | null
 }
 
 export type SearchParamsPromise = Promise<RawSearchParams>

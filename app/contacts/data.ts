@@ -5,6 +5,13 @@ import { workingStatus } from "./utils"
 export async function getContacts(sp: RawSearchParams): Promise<Contact[]> {
   const supabase = await createClient()
 
+const {
+  data: { user },
+} = await supabase.auth.getUser()
+
+if (!user) return []
+
+
   const q = (sp?.q ?? "").trim()
   const sort = sp?.sort ?? "name"
   const dir = sp?.dir === "desc" ? "desc" : "asc"
@@ -17,9 +24,13 @@ export async function getContacts(sp: RawSearchParams): Promise<Contact[]> {
   const onlyFav = sp?.fav === "1"
   const onlyBl = sp?.bl === "1"
 
-  const supa = supabase.from("contacts_with_details").select("*")
+  let query = supabase.from("contacts_with_details").select("*")
 
-  let query = supa
+  if (sp.team) {
+    query = query.eq("team_id", sp.team)
+  } else {
+    query = query.eq("user_id", user.id)
+  }
 
   if (q) {
     query = query.or(

@@ -17,6 +17,7 @@ export default function FilterForm({ sp }: { sp: RawSearchParams }) {
       method="GET"
       className="rounded-2xl border p-4 grid grid-cols-1 md:grid-cols-12 gap-3"
     >
+      <input type="hidden" name="team" value={sp.team ?? ""} />
       <div className="md:col-span-8">
         <label className="block text-sm font-medium mb-1">Search</label>
         <input
