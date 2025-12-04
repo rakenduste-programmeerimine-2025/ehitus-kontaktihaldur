@@ -6,6 +6,7 @@ import { AppSidebar } from "@/components/app-sidebar"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { Toaster } from "@/components/ui/sonner"
 import { TeamProvider } from "@/components/team-context"
+import { TeamUrlSync } from "@/components/team-url-sync"
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -44,6 +45,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <TeamProvider>
+            <TeamUrlSync />
             <SidebarProvider>
               <div className="flex min-h-screen w-full">
                 <aside className="fixed inset-y-0 left-0 z-[100] h-full w-[200px] border-border bg-background">

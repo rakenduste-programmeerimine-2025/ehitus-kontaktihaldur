@@ -1,6 +1,5 @@
 "use client"
 
-import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { useTeam } from "@/components/team-context"
@@ -20,7 +19,6 @@ type MemberRow = {
 }
 
 export function TeamSwitcher() {
-  const router = useRouter()
   const supabase = createClient()
   const { activeTeam, setActiveTeam } = useTeam()
 
@@ -65,14 +63,15 @@ export function TeamSwitcher() {
     }
 
     load()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [supabase])
 
-  if (!userLoaded) return null
-
-  if (!userId) return null
+  if (!userLoaded || !userId) return null
 
   const currentLabel = activeTeam?.name || "Personal"
+
+  function switchTo(team: SimpleTeam | null) {
+    setActiveTeam(team)
+  }
 
   return (
     <Popover>
@@ -92,10 +91,7 @@ export function TeamSwitcher() {
 
       <PopoverContent className="w-56 p-2 z-[9999]">
         <button
-          onClick={() => {
-            setActiveTeam(null)
-            router.push("/contacts")
-          }}
+          onClick={() => switchTo(null)}
           className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm hover:bg-accent text-left ${
             activeTeam === null ? "bg-accent font-medium" : ""
           }`}
@@ -114,10 +110,7 @@ export function TeamSwitcher() {
           teams.map(team => (
             <button
               key={`team-${team.id}`}
-              onClick={() => {
-                setActiveTeam(team)
-                router.push(`/contacts?team=${team.id}`)
-              }}
+              onClick={() => switchTo(team)}
               className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm hover:bg-accent text-left ${
                 activeTeam?.id === team.id ? "bg-accent font-medium" : ""
               }`}
