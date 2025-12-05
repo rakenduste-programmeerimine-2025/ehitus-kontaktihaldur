@@ -1,4 +1,5 @@
 import type { RawSearchParams } from "@/app/objects/types"
+import Link from "next/link"
 
 export default function FilterForm({ sp }: { sp: RawSearchParams }) {
   const q = sp.q ?? ""
@@ -100,10 +101,17 @@ export default function FilterForm({ sp }: { sp: RawSearchParams }) {
         </details>
       </div>
 
-      <div className="md:col-span-12">
+      <div className="md:col-span-12 flex gap-3">
         <button className="rounded-md bg-primary px-3 py-2 text-sm text-primary-foreground">
           Apply
         </button>
+
+        <Link
+          href="/objects"
+          className="rounded-md px-3 py-2 text-sm border hover:bg-muted"
+        >
+          Clear filters
+        </Link>
       </div>
     </form>
   )
