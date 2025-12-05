@@ -358,3 +358,14 @@ create table tasks (
 
 -- 
 alter table tasks disable row level security;
+---
+
+--tasks update
+alter table tasks add column if not exists repeat_type text check (repeat_type in ('none', 'daily', 'weekly', 'monthly', 'yearly')) default 'none';
+alter table tasks add column if not exists repeat_interval int default 1; -- e.g. every 2 weeks
+alter table tasks add column if not exists repeat_on_weekdays boolean[] default null; -- e.g. {mon,wed,fri}
+alter table tasks add column if not exists repeat_on_month_day int default null; -- e.g. 15th of month
+alter table tasks add column if not exists last_completed_at timestamp with time zone default null;
+alter table tasks add column if not exists next_due_date timestamp with time zone default null;
+---seejärel
+update tasks set repeat_type = 'none' where repeat_type is null;
