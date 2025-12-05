@@ -1,4 +1,4 @@
-// app/objects/[id]/workers/page.tsx
+
 import { notFound, redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import WorkersManager from "@/components/objects/workers-manager"

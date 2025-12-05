@@ -1,4 +1,4 @@
-// app/objects/[id]/page.tsx
+
 import { notFound, redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { fmt, objectStatus } from "@/app/objects/utils"
@@ -45,7 +45,7 @@ export default async function ObjectDetailPage({
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 space-y-8">
-      {/* Header */}
+      {/* Header + Info (unchanged) */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">{object.name ?? "Unnamed Object"}</h1>
@@ -54,16 +54,11 @@ export default async function ObjectDetailPage({
           </p>
         </div>
         <div className="flex gap-2">
-          <Button asChild variant="outline" size="sm">
-            <Link href={`/objects/${object.id}/edit`}>Edit</Link>
-          </Button>
-          <Button asChild variant="outline">
-            <Link href="/objects">Back to List</Link>
-          </Button>
+          <Button asChild variant="outline" size="sm"><Link href={`/objects/${object.id}/edit`}>Edit</Link></Button>
+          <Button asChild variant="outline"><Link href="/objects">Back to List</Link></Button>
         </div>
       </div>
 
-      {/* Object Info */}
       <div className="grid gap-6 md:grid-cols-2">
         <div className="space-y-4">
           <div><h2 className="text-sm font-medium text-muted-foreground">Address</h2><p className="mt-1">{object.location ?? "—"}</p></div>
@@ -87,11 +82,33 @@ export default async function ObjectDetailPage({
           </div>
         </CardHeader>
         <CardContent>
-          {/* Your existing worker list */}
+          {(!workers || workers.length === 0) ? (
+            <p className="text-muted-foreground italic">No workers assigned yet.</p>
+          ) : (
+            <div className="space-y-3">
+              {workers.map((w: any) => (
+                <Link key={w.contactid} href={`/contacts/${w.contactid}`} className="block">
+                  <div className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-accent/5 transition-all">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <User className="w-5 h-5 text-primary" />
+                      </div>
+                      <p className="font-medium hover:underline">{w.contact || "Unnamed"}</p>
+                    </div>
+                    {w.ispaid !== null && (
+                      <Badge variant={w.ispaid ? "default" : "secondary"}>
+                        {w.ispaid ? <><DollarSign className="w-3 h-3 mr-1" />Paid</> : "Unpaid"}
+                      </Badge>
+                    )}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 
-      {/* NEW: Reusable Task Component */}
+      {/* Tasks */}
       <ObjectTasks objectId={object.id} tasks={tasks || []} />
     </div>
   )
