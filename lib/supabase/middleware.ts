@@ -2,6 +2,8 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { hasEnvVars } from "../utils";
 
+const INACTIVITY_LIMIT = 30 * 60 * 1000;
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
@@ -41,9 +43,6 @@ export async function updateSession(request: NextRequest) {
   // Do not run code between createServerClient and
   // supabase.auth.getClaims(). A simple mistake could make it very hard to debug
   // issues with users being randomly logged out.
-
-  // IMPORTANT: If you remove getClaims() and you use server-side rendering
-  // with the Supabase client, your users may be randomly logged out.
   const { data } = await supabase.auth.getClaims();
   const user = data?.claims;
 
@@ -57,6 +56,33 @@ export async function updateSession(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = "/auth/login";
     return NextResponse.redirect(url);
+  }
+
+  const lastActive = request.cookies.get("lastActive")?.value;
+  const now = Date.now();
+
+  if (user) {
+    if (lastActive) {
+      const diff = now - Number(lastActive);
+      if (diff > INACTIVITY_LIMIT) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/auth/login";
+        url.searchParams.set("expired", "1");
+
+        supabaseResponse.cookies.delete("lastActive");
+        supabaseResponse.cookies.delete("sb-access-token");
+        supabaseResponse.cookies.delete("sb-refresh-token");
+
+        return NextResponse.redirect(url);
+      }
+    }
+
+    supabaseResponse.cookies.set("lastActive", now.toString(), {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: true,
+      path: "/",
+    });
   }
 
   // IMPORTANT: You *must* return the supabaseResponse object as it is.
