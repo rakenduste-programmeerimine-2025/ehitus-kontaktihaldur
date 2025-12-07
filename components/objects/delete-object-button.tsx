@@ -1,14 +1,9 @@
 "use client"
 
-import { deleteObject, type ObjectFormState } from "@/app/objects/actions"
 import { Button } from "@/components/ui/button"
 import { Trash2 } from "lucide-react"
-import { useActionState } from "react"
-
-const initialState: ObjectFormState = {
-  success: false,
-  message: "",
-}
+import { toast } from "sonner"
+import { deleteObject } from "@/app/objects/actions"
 
 type Props = {
   objectId: number
@@ -16,23 +11,26 @@ type Props = {
 }
 
 export default function DeleteObjectButton({ objectId, objectName }: Props) {
-  const [state, formAction] = useActionState(deleteObject, initialState)
+  const handleDelete = async () => {
+    if (!confirm(`Delete "${objectName}"? This cannot be undone.`)) {
+      return
+    }
+
+    // Correct way: call the server action directly with just the number
+    const result = await deleteObject(objectId)
+
+    if (result.success) {
+      toast.success("Object deleted")
+      // redirect is already done in the action
+    } else {
+      toast.error("Failed to delete", { description: result.message })
+    }
+  }
 
   return (
-    <form
-      action={formAction}
-      onSubmit={(e) => {
-        if (!confirm(`Permanently delete "${objectName}"? This cannot be undone.`)) {
-          e.preventDefault()
-        }
-      }}
-    >
-      <input type="hidden" name="id" value={objectId} />
-
-      <Button type="submit" variant="destructive" size="sm">
-        <Trash2 className="mr-2 h-4 w-4" />
-        Delete Object
-      </Button>
-    </form>
+    <Button variant="destructive" size="sm" onClick={handleDelete}>
+      <Trash2 className="w-4 h-4 mr-2" />
+      Delete Object
+    </Button>
   )
 }

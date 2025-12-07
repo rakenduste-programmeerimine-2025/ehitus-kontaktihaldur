@@ -1,4 +1,4 @@
-// app/objects/[id]/edit/page.tsx
+
 import { notFound, redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import EditObjectForm from "@/components/objects/edit-object-form"
@@ -8,9 +8,9 @@ import DeleteObjectButton from "@/components/objects/delete-object-button"
 export default async function ObjectEditPage({
   params,
 }: {
-  params: Promise<{ id: string }>   // ← params is a Promise in Next.js 16
+  params: Promise<{ id: string }>   
 }) {
-  // ←←← THIS WAS THE 404 BUG — you must await params!
+
   const { id } = await params
   const idNum = Number(id)
 
