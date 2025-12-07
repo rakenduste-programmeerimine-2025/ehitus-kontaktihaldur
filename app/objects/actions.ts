@@ -220,3 +220,34 @@ export async function updateObject(
   revalidatePath("/objects") // optional – refreshes the list page too
   return { success: true, message: "Object updated successfully" }
 }
+
+export async function addReview(formData: FormData) {
+  const supabase = createClient()
+  
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect("/auth/login")
+
+  const workingonId = formData.get("workingon_id")
+  const rating = formData.get("rating")
+  const reviewtext = formData.get("reviewtext")?.toString().trim() || null
+
+  if (!workingonId || !rating) return
+
+  const { error } = await supabase
+    .from("review")
+    .insert({
+      fk_workingon_id: Number(workingonId),
+      rating: Number(rating),
+      reviewtext: reviewtext || null,
+      user_id: user.id,
+    })
+
+  if (error) {
+    console.error("Review insert error:", error)
+    // You could return an error state here if you want toast feedback later
+    return
+  }
+
+  // Refresh the page to show updated data (or just close form)
+  revalidatePath(`/objects/[id]`, "page")
+}
