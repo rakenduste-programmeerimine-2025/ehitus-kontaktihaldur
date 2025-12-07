@@ -32,6 +32,7 @@ export default function ObjectsTable({ objects }: ObjectsTableProps) {
             <th className="text-left p-4 font-medium">Status</th>
           </tr>
         </thead>
+
         <tbody>
           {objects.map((obj) => (
             <tr
@@ -67,5 +68,5 @@ export default function ObjectsTable({ objects }: ObjectsTableProps) {
         </tbody>
       </table>
     </div>
-  )
+  );
 }
