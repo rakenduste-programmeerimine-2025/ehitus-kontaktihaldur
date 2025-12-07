@@ -1,10 +1,10 @@
-"use client"; // ← This makes it a Client Component (only this tiny one)
+"use client"
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
-import { Star, ChevronDown, ChevronUp } from "lucide-react"
+import { ChevronUp } from "lucide-react"
 import { addReview } from "@/app/objects/actions"
 
 type Props = {
@@ -15,7 +15,6 @@ type Props = {
 export default function AddWorkerReview({ workingonId, contactName }: Props) {
   const [isOpen, setIsOpen] = useState(false)
 
-  // If closed → just show a tiny button
   if (!isOpen) {
     return (
       <div className="mt-3 text-center">
@@ -25,13 +24,12 @@ export default function AddWorkerReview({ workingonId, contactName }: Props) {
           onClick={() => setIsOpen(true)}
           className="text-muted-foreground hover:text-foreground"
         >
-          <Star className="w-4 h-4 mr-1" /> Leave a review for {contactName}
+          Leave a review for {contactName}
         </Button>
       </div>
     )
   }
 
-  // If open → show the full form
   return (
     <Card className="mt-4 border-dashed">
       <CardContent className="pt-5">
@@ -39,11 +37,7 @@ export default function AddWorkerReview({ workingonId, contactName }: Props) {
           <p className="text-sm font-medium">
             Rate <span className="font-semibold">{contactName}</span>
           </p>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsOpen(false)}
-          >
+          <Button variant="ghost" size="sm" onClick={() => setIsOpen(false)}>
             <ChevronUp className="w-4 h-4" />
           </Button>
         </div>
@@ -51,6 +45,7 @@ export default function AddWorkerReview({ workingonId, contactName }: Props) {
         <form action={addReview} className="space-y-4">
           <input type="hidden" name="workingon_id" value={workingonId} />
 
+          {/* Rating buttons */}
           <div className="flex justify-center gap-3">
             {[1, 2, 3, 4, 5].map((n) => (
               <label key={n} className="cursor-pointer">
@@ -61,11 +56,20 @@ export default function AddWorkerReview({ workingonId, contactName }: Props) {
                   required
                   className="sr-only peer"
                 />
-                <Star
-                  className="w-9 h-9 transition-all hover:scale-110 
-                    fill-transparent stroke-yellow-600 
-                    peer-checked:fill-yellow-500 peer-checked:stroke-yellow-600"
-                />
+                <div
+                  className="
+                    w-10 h-10 flex items-center justify-center rounded-md
+                    border text-sm font-semibold
+                    transition-all
+                    hover:scale-105
+                    border-muted-foreground
+                    peer-checked:bg-primary
+                    peer-checked:text-primary-foreground
+                    peer-checked:border-primary
+                  "
+                >
+                  {n}
+                </div>
               </label>
             ))}
           </div>
