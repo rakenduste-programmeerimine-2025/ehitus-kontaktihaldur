@@ -265,26 +265,39 @@ BEGIN
       isblacklist = p_isblacklist,
       isfavorite = p_isfavorite
   WHERE id = p_contact_id
-    AND user_id = p_user_id;
+    AND (
+          -- Personal contact: owner can edit
+          user_id = p_user_id
+
+          OR
+
+          -- Team contact: any member of that team can edit
+          (
+            user_id IS NULL
+            AND team_id IS NOT NULL
+            AND EXISTS (
+              SELECT 1
+              FROM team_member tm
+              WHERE tm.team_id = contacts.team_id
+                AND tm.user_id = p_user_id
+                AND tm.status_id = (
+                    SELECT id FROM member_status WHERE name = 'APPROVED' LIMIT 1
+                )
+            )
+          )
+        );
 
   FOR rec IN 
     SELECT *
     FROM jsonb_to_recordset(p_history)
-      AS t(workingon_id bigint, object_name text, rating smallint, reviewtext text)
+      AS t(workingon_id bigint, object_id bigint, rating smallint, reviewtext text)
   LOOP
-
-    SELECT fk_object_id
-      INTO v_object_id
-      FROM workingon
-      WHERE id = rec.workingon_id;
-
-    UPDATE object
-      SET name = rec.object_name
-      WHERE id = v_object_id;
-
+    UPDATE workingon
+    SET fk_object_id = rec.object_id
+    WHERE id = rec.workingon_id;
     SELECT id INTO v_existing_review_id
-      FROM review
-      WHERE fk_workingon_id = rec.workingon_id;
+    FROM review
+    WHERE fk_workingon_id = rec.workingon_id;
 
     IF v_existing_review_id IS NULL THEN
       INSERT INTO review (fk_workingon_id, rating, reviewtext, user_id)

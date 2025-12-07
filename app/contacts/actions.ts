@@ -128,6 +128,14 @@ export async function updateContact(
   const { data: { user } } = await sb.auth.getUser()
   if (!user) return { success: false, message: "Not logged in." }
 
+  const { data: contactRow } = await sb
+    .from("contacts")
+    .select("team_id")
+    .eq("id", id)
+    .single()
+
+  const teamId = contactRow?.team_id ?? null
+
   const { data: favRow } = await sb
     .from("contacts")
     .select("isfavorite")
@@ -136,9 +144,8 @@ export async function updateContact(
 
   const isfavorite = favRow?.isfavorite ?? false
 
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const history: any[] = []
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const history: any[] = []
   let index = 0
 
   while (true) {
@@ -166,8 +173,9 @@ const history: any[] = []
     p_workingto: workingto,
     p_cost: cost,
     p_isblacklist: isblacklist,
-    p_isfavorite: isfavorite,  
+    p_isfavorite: isfavorite,
     p_user_id: user.id,
+    p_team_id: teamId,
     p_history: history
   })
 
