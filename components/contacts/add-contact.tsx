@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { useActionState, useEffect } from "react"
 import { toast } from "sonner"
+import { useTeam } from "@/components/team-context"
 
 type Obj = { id: number; name: string }
 
@@ -16,11 +17,15 @@ const initialState: ContactFormState = {
 
 export default function AddContactForm({ objects }: { objects: Obj[] }) {
   const [state, formAction] = useActionState(createContact, initialState)
+  const { activeTeam } = useTeam()
+
+  const teamId = activeTeam?.id ?? null
 
   useEffect(() => {
     if (state.message) {
       if (state.success) {
         toast.success(state.message)
+        window.location.href = "/contacts"
       } else {
         toast.error("Error adding contact", {
           description: state.message,
@@ -34,6 +39,12 @@ export default function AddContactForm({ objects }: { objects: Obj[] }) {
       action={formAction}
       className="space-y-4 rounded-xl border bg-background p-6 shadow-sm"
     >
+      <input
+        type="hidden"
+        name="team_id"
+        value={teamId ?? ""}
+      />
+
       <div className="space-y-1">
         <Label htmlFor="name">Name</Label>
         <Input
@@ -86,7 +97,7 @@ export default function AddContactForm({ objects }: { objects: Obj[] }) {
           multiple
           className="w-full rounded-md border px-3 py-2 text-sm"
         >
-          {objects.map((o: Obj) => (
+          {objects.map(o => (
             <option
               key={o.id}
               value={o.id}

@@ -133,7 +133,8 @@ CREATE OR REPLACE FUNCTION public.create_full_contact(
     p_workingfrom date,
     p_workingto   date,
     p_cost        real,
-    p_user_id     uuid
+    p_user_id     uuid,
+    p_team_id     bigint
 )
 RETURNS bigint AS $$
 DECLARE
@@ -141,6 +142,8 @@ DECLARE
     v_role_name  text;
     v_object_id  bigint;
     v_skill_id   smallint;
+    v_skill_user_id bigint;
+    v_skill_team_id bigint;
 BEGIN
     INSERT INTO contacts (
         name,
@@ -153,6 +156,7 @@ BEGIN
         workingfrom,
         workingto,
         user_id,
+        team_id,
         isdeleted
     )
     VALUES (
@@ -165,7 +169,8 @@ BEGIN
         FALSE,
         p_workingfrom,
         p_workingto,
-        p_user_id,
+        CASE WHEN p_team_id IS NULL THEN p_user_id ELSE NULL END,
+        CASE WHEN p_team_id IS NOT NULL THEN p_team_id ELSE NULL END,
         FALSE
     )
     RETURNING id INTO v_contact_id;
@@ -175,20 +180,28 @@ BEGIN
         LOOP
             v_role_name := trim(v_role_name);
             IF v_role_name <> '' THEN
-                SELECT id
-                INTO v_skill_id
+                v_skill_user_id := CASE WHEN p_team_id IS NULL THEN p_user_id ELSE NULL END;
+                v_skill_team_id := CASE WHEN p_team_id IS NOT NULL THEN p_team_id ELSE NULL END;
+
+                SELECT id INTO v_skill_id
                 FROM skills
                 WHERE name = v_role_name
-                  AND user_id = p_user_id;
+                  AND (user_id = v_skill_user_id OR user_id IS NULL)
+                LIMIT 1;
 
                 IF v_skill_id IS NULL THEN
                     INSERT INTO skills (name, user_id)
-                    VALUES (v_role_name, p_user_id)
+                    VALUES (v_role_name, v_skill_user_id)
                     RETURNING id INTO v_skill_id;
                 END IF;
 
                 INSERT INTO hasskills (fk_contacts_id, fk_skills_id, user_id)
-                VALUES (v_contact_id, v_skill_id, p_user_id);
+                VALUES (
+                    v_contact_id,
+                    v_skill_id,
+                    v_skill_user_id
+                );
+
             END IF;
         END LOOP;
     END IF;
@@ -205,7 +218,7 @@ BEGIN
             VALUES (
                 v_contact_id,
                 v_object_id,
-                p_user_id,
+                CASE WHEN p_team_id IS NULL THEN p_user_id ELSE NULL END,
                 TRUE
             );
         END LOOP;
@@ -216,7 +229,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 GRANT EXECUTE ON FUNCTION public.create_full_contact(
-    text, text, text, date, text, bigint[], date, date, real, uuid
+    text, text, text, date, text, bigint[], date, date, real, uuid, bigint
 ) TO authenticated;
 
 --UPDATE CONTACT

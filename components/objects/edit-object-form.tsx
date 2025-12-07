@@ -106,7 +106,6 @@ export default function EditObjectForm({ object }: Props) {
             defaultValue={object.description ?? ""}
             placeholder="Detailed description..."
             className="min-h-32 resize-none"
-            rows={5}
           />
         </div>
       </div>

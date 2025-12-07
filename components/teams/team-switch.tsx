@@ -9,6 +9,7 @@ import {
   PopoverContent,
 } from "@/components/ui/popover"
 import { ChevronDown, UsersRound, User2 } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 export type SimpleTeam = { id: number; name: string }
 
@@ -20,13 +21,15 @@ type MemberRow = {
 
 export function TeamSwitcher() {
   const supabase = createClient()
-  const { activeTeam, setActiveTeam } = useTeam()
+  const { activeTeam, setActiveTeam, setTeamRole } = useTeam()
 
   const [teams, setTeams] = useState<SimpleTeam[]>([])
   const [loading, setLoading] = useState(true)
 
   const [userLoaded, setUserLoaded] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
+  const router = useRouter()
+
 
   useEffect(() => {
     const load = async () => {
@@ -69,9 +72,39 @@ export function TeamSwitcher() {
 
   const currentLabel = activeTeam?.name || "Personal"
 
-  function switchTo(team: SimpleTeam | null) {
-    setActiveTeam(team)
+async function switchTo(team: SimpleTeam | null) {
+  setActiveTeam(team)
+
+  const params = new URLSearchParams(window.location.search)
+  if (team) params.set("team", String(team.id))
+  else params.delete("team")
+
+  window.history.replaceState(null, "", `?${params.toString()}`)
+
+  router.refresh()
+
+  if (!team) {
+    setTeamRole(null)
+    return
   }
+
+const { data } = await supabase
+  .from("team_member")
+  .select("role:role_id ( name )")
+  .eq("team_id", team.id)
+  .eq("user_id", userId)
+  .single()
+
+const roleData = Array.isArray(data?.role)
+  ? data.role[0]
+  : data?.role
+
+const role = roleData?.name?.toUpperCase() ?? null
+
+setTeamRole(role)
+
+
+}
 
   return (
     <Popover>

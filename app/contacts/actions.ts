@@ -75,11 +75,13 @@ export async function createContact(
 
   const costStr = formData.get("cost")?.toString().trim()
   const cost = costStr ? Number(costStr) : null
+  const teamIdRaw = formData.get("team_id")
+  const teamId = teamIdRaw ? Number(teamIdRaw) : null
 
   const { data: { user } } = await sb.auth.getUser()
   if (!user) redirect("/auth/login")
 
-  const userId = user.id
+  const userId = teamId ? null : user.id
 
   const { error } = await sb.rpc("create_full_contact", {
     p_name: name,
@@ -91,7 +93,8 @@ export async function createContact(
     p_workingfrom: workingfrom,
     p_workingto: workingto,
     p_cost: cost,
-    p_user_id: userId
+    p_user_id: userId,
+    p_team_id: teamId
   })
 
   if (error) {

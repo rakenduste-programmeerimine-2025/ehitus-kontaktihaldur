@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useState, useEffect, useRef } from "react"
+import { createContext, useContext, useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 
 export type SimpleTeam = { id: number; name: string }
@@ -8,11 +8,15 @@ export type SimpleTeam = { id: number; name: string }
 type TeamContextType = {
   activeTeam: SimpleTeam | null
   setActiveTeam: (team: SimpleTeam | null) => void
+  teamRole: string | null
+  setTeamRole: (role: string | null) => void
 }
 
 const TeamContext = createContext<TeamContextType>({
   activeTeam: null,
   setActiveTeam: () => {},
+  teamRole: null,
+  setTeamRole: () => {},
 })
 
 export function TeamProvider({ children }: { children: React.ReactNode }) {
@@ -24,6 +28,17 @@ export function TeamProvider({ children }: { children: React.ReactNode }) {
     return raw ? JSON.parse(raw) : null
   })
 
+  const [teamRole, setTeamRole] = useState<string | null>(null)
+  const [userId, setUserId] = useState<string | null>(null)
+
+  useEffect(() => {
+    async function loadUser() {
+      const { data } = await supabase.auth.getUser()
+      setUserId(data.user?.id ?? null)
+    }
+    loadUser()
+  }, [])
+
   useEffect(() => {
     if (activeTeam) {
       localStorage.setItem("activeTeam", JSON.stringify(activeTeam))
@@ -32,38 +47,35 @@ export function TeamProvider({ children }: { children: React.ReactNode }) {
     }
   }, [activeTeam])
 
-  const previousUserId = useRef<string | null>(null)
-
   useEffect(() => {
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        const userId = session?.user?.id ?? null
-
-        if (!userId) {
-          previousUserId.current = null
-          setActiveTeam(null)
-          return
-        }
-
-        if (previousUserId.current === null) {
-          previousUserId.current = userId
-          return
-        }
-
-        if (previousUserId.current !== userId) {
-          previousUserId.current = userId
-          setActiveTeam(null)
-          return
-        }
-
+    async function loadRole() {
+      if (!userId || !activeTeam) {
+        setTeamRole(null)
+        return
       }
-    )
 
-    return () => listener.subscription.unsubscribe()
-  }, [supabase])
+      const { data } = await supabase
+        .from("team_member")
+        .select("role:role_id ( name )")
+        .eq("team_id", activeTeam.id)
+        .eq("user_id", userId)
+        .single()
+
+      const roleObj = Array.isArray(data?.role)
+        ? data.role[0]
+        : data?.role
+
+      const role = roleObj?.name?.toUpperCase() ?? null
+      setTeamRole(role)
+    }
+
+    loadRole()
+  }, [supabase, activeTeam, userId])
 
   return (
-    <TeamContext.Provider value={{ activeTeam, setActiveTeam }}>
+    <TeamContext.Provider
+      value={{ activeTeam, setActiveTeam, teamRole, setTeamRole }}
+    >
       {children}
     </TeamContext.Provider>
   )
