@@ -3,7 +3,6 @@
 import { BookUser, HomeIcon, HammerIcon, UsersIcon } from "lucide-react"
 import { NavMain } from "@/components/nav-main"
 import { NavUser } from "@/components/nav-user"
-import { SidebarTrigger } from "@/components/ui/sidebar"
 import {
   Sidebar,
   SidebarContent,
@@ -42,11 +41,9 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 
   return (
     <Sidebar
-      collapsible="icon"
       {...props}
     >
       <SidebarHeader>
-        <SidebarTrigger className="absolute -right-10 top-3 z-50 bg-background border border-border rounded-md shadow hover:bg-muted transition" />
         {user && (
           <div className="px-3 pt-4">
             <TeamSwitcher />
