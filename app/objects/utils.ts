@@ -7,21 +7,30 @@ export function fmt(d?: string | null) {
   return x.toLocaleDateString()
 }
 
-export function objectStatus(o: Objekt) {
+export function objectStatus(o: Objekt): { variant: "default" | "secondary" | "destructive" | "outline", text: string } {
   const today = new Date()
 
   const from = o.startdate ? new Date(o.startdate) : null
   const to = o.enddate ? new Date(o.enddate) : null
 
-  if (!from && !to) return "—"
+  let status: "Active" | "Passive" | "—" = "—"
 
-  if (from && !to) {
-    return "Active"
+  if (!from && !to) {
+    status = "—"
+  } else if (from && !to) {
+    status = "Active"
+  } else if (!from && to) {
+    status = today <= to ? "Active" : "Passive"
+  } else {
+    status = from! <= today && today <= to! ? "Active" : "Passive"
   }
 
-  if (!from && to) {
-    return today <= to ? "Active" : "Passive"
-  }
+  const variant =
+    status === "Active"
+      ? "default"
+      : status === "Passive"
+      ? "secondary"
+      : "outline"
 
-  return from! <= today && today <= to! ? "Active" : "Passive"
+  return { variant, text: status }
 }
