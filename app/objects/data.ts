@@ -5,6 +5,12 @@ import { objectStatus } from "./utils"
 export async function getObjects(sp: RawSearchParams): Promise<Objekt[]> {
   const supabase = await createClient()
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) return []
+
   const q = (sp?.q ?? "").trim()
   const sort = sp?.sort ?? "name"
   const dir = sp?.dir === "desc" ? "desc" : "asc"
@@ -14,6 +20,12 @@ export async function getObjects(sp: RawSearchParams): Promise<Objekt[]> {
   const period_to = sp?.period_to?.trim() ?? ""
 
   let query = supabase.from("object").select("*")
+
+  if (sp.team) {
+    query = query.eq("team_id", sp.team)
+  } else {
+    query = query.eq("user_id", user.id)
+  }
 
   if (q) {
     query = query.or(
