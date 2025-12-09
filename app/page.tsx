@@ -8,17 +8,37 @@ import { User } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Users, Home, Users2, ArrowRight, Hammer, ChevronLeft, ChevronRight } from "lucide-react";
+import { useTeam } from "@/components/team-context";
 
-// Your existing types
-type Contact = { id: number; name: string | null; number: string | null; cost: number | null; isblacklist: boolean };
-type Obj = { id: number; name: string | null; location: string | null; description: string | null };
-type SkillRow = { fk_contacts_id: number; skills: { name: string | null } | null };
+type Contact = {
+  id: number;
+  name: string | null;
+  number: string | null;
+  cost: number | null;
+  isblacklist: boolean;
+};
+
+type Obj = {
+  id: number;
+  name: string | null;
+  location: string | null;
+  description: string | null;
+};
+
+type SkillRow = {
+  fk_contacts_id: number;
+  skills: { name: string | null }[];
+};
+
 
 export default function Home2() {
+  const supabase = createClient();
+
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Dashboard state (only used when logged in)
+  const { activeTeam } = useTeam();
+  const teamId = activeTeam?.id ?? null;
   const [favContacts, setFavContacts] = useState<Contact[]>([]);
   const [activeObjects, setActiveObjects] = useState<Obj[]>([]);
   const [contactSkills, setContactSkills] = useState<Record<number, string[]>>({});
@@ -27,24 +47,19 @@ export default function Home2() {
   const CARDS_PER_PAGE = 5;
 
   useEffect(() => {
-    const supabase = createClient();
-
-    // Listen to auth changes
     const { data: listener } = supabase.auth.onAuthStateChange((_, session) => {
       setUser(session?.user ?? null);
       setLoading(false);
     });
 
-    // Initial load
     supabase.auth.getUser().then(({ data }) => {
       setUser(data.user ?? null);
       setLoading(false);
     });
 
     return () => listener.subscription.unsubscribe();
-  }, []);
+  }, [supabase.auth]);
 
-  // Load dashboard data only when user is logged in
   useEffect(() => {
     if (!user) {
       setFavContacts([]);
@@ -52,29 +67,51 @@ export default function Home2() {
       return;
     }
 
-    const supabase = createClient();
-
     const loadSkillsForContacts = async (contactIds: number[]) => {
       if (contactIds.length === 0) return {};
+
       const { data } = await supabase
         .from("hasskills")
         .select("fk_contacts_id, skills(name)")
         .in("fk_contacts_id", contactIds);
+
       const result: Record<number, string[]> = {};
-      (data as SkillRow[] | null)?.forEach((row) => {
+
+      (data as SkillRow[] | null)?.forEach(row => {
         const id = row.fk_contacts_id;
-        const skill = row.skills?.name;
         if (!result[id]) result[id] = [];
-        if (skill) result[id].push(skill);
+
+        row.skills?.forEach(s => {
+          if (s.name) result[id].push(s.name);
+        });
       });
       return result;
     };
 
     const loadDashboard = async () => {
-      const [favRes, objRes] = await Promise.all([
-        supabase.from("contacts").select("id, name, number, cost, isblacklist").eq("isfavorite", true).eq("isdeleted", false),
-        supabase.from("object").select("id, name, location, description").eq("isactive", true),
-      ]);
+      let favQuery = supabase
+        .from("contacts")
+        .select("id, name, number, cost, isblacklist")
+        .eq("isfavorite", true)
+        .eq("isdeleted", false);
+
+      let objQuery = supabase
+        .from("object")
+        .select("id, name, location, description")
+        .eq("isactive", true);
+
+      if (teamId) {
+        favQuery = favQuery.eq("team_id", teamId);
+        objQuery = objQuery.eq("team_id", teamId);
+      }
+
+      else {
+        favQuery = favQuery.eq("user_id", user.id);
+        objQuery = objQuery.eq("user_id", user.id);
+      }
+
+      const favRes = await favQuery;
+      const objRes = await objQuery;
 
       const favData = (favRes.data as Contact[]) ?? [];
       setFavContacts(favData);
@@ -86,7 +123,7 @@ export default function Home2() {
     };
 
     void loadDashboard();
-  }, [user]);
+  }, [user, teamId, supabase]);
 
   // Still loading
   if (loading) {
@@ -107,8 +144,8 @@ export default function Home2() {
           <div className="relative z-10 text-center px-6 max-w-5xl mx-auto">
             <div className="flex justify-center mb-8">
               <div className="p-4 bg-white rounded-2xl shadow-xl">
-                <Hammer className="w-14 h-14 text-neutral-800" />
-              </div>
+              <Hammer className="w-14 h-14 text-neutral-800" />
+            </div>
             </div>
             <h1 className="text-5xl md:text-6xl font-bold text-neutral-900 mb-6">Contactor</h1>
             <p className="text-xl md:text-2xl text-neutral-600 mb-10 max-w-3xl mx-auto">
@@ -202,9 +239,11 @@ export default function Home2() {
     <main className="min-h-screen w-full flex flex-col items-center px-8 pb-20 pt-14">
       <div className="text-center mb-12">
         <h1 className="text-2xl font-semibold">
-          Welcome back, {user.user_metadata?.first_name || "User"}
+          Welcome back, {user?.user_metadata?.first_name || "User"}
         </h1>
-        <p className="text-neutral-500 text-sm">Your workspace</p>
+        <p className="text-neutral-500 text-sm">
+          {teamId ? `Team workspace: ${activeTeam?.name}` : "Personal workspace"}
+        </p>
       </div>
 
       {/* Favourite Contacts */}
@@ -221,23 +260,30 @@ export default function Home2() {
             >
               <ChevronLeft size={26} />
             </button>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 flex-1 px-4">
-              {favContacts.slice(favIndex, favIndex + CARDS_PER_PAGE).map((c) => (
+              {favContacts.slice(favIndex, favIndex + CARDS_PER_PAGE).map(c => (
                 <Link key={c.id} href={`/contacts/${c.id}`}>
-                  <Card className="h-40 rounded-lg border hover:shadow-md hover:scale-[1.02] transition bg-white">
+                  <Card className="h-40 rounded-lg border hover:shadow-md transition">
                     <CardContent className="p-4">
                       <h3 className="font-medium truncate">{c.name}</h3>
-                      <p className="text-xs text-neutral-500">{contactSkills[c.id]?.[0] || "No skill"}</p>
+                      <p className="text-xs text-neutral-500">
+                        {contactSkills[c.id]?.[0] || "No skill"}
+                      </p>
                       <p className="text-xs text-neutral-500 mt-1">Tel: {c.number}</p>
                       <p className="text-xs">Cost: {c.cost}€</p>
-                      {c.isblacklist && <p className="text-xs text-red-600 mt-1">Blacklisted</p>}
+                      {c.isblacklist && (
+                        <p className="text-xs text-red-600 mt-1">Blacklisted</p>
+                      )}
                     </CardContent>
                   </Card>
                 </Link>
               ))}
             </div>
             <button
-              onClick={() => setFavIndex(Math.min(favIndex + 1, Math.max(favContacts.length - CARDS_PER_PAGE, 0)))}
+              onClick={() =>
+                setFavIndex(Math.min(favIndex + 1, Math.max(favContacts.length - CARDS_PER_PAGE, 0)))
+              }
               disabled={favIndex >= favContacts.length - CARDS_PER_PAGE}
               className="p-2 rounded-full hover:bg-neutral-100 disabled:opacity-30"
             >
@@ -250,6 +296,7 @@ export default function Home2() {
       {/* Active Objects */}
       <section className="w-full max-w-6xl">
         <h2 className="text-lg font-semibold mb-4">Active Objects</h2>
+
         {activeObjects.length === 0 ? (
           <p className="text-neutral-500">No active objects.</p>
         ) : (
@@ -262,20 +309,24 @@ export default function Home2() {
               <ChevronLeft size={26} />
             </button>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 flex-1 px-4">
-              {activeObjects.slice(objIndex, objIndex + CARDS_PER_PAGE).map((o) => (
+              {activeObjects.slice(objIndex, objIndex + CARDS_PER_PAGE).map(o => (
                 <Link key={o.id} href={`/objects/${o.id}`}>
-                  <Card className="h-40 rounded-lg border hover:shadow-md hover:scale-[1.02] transition bg-white">
+                  <Card className="h-40 rounded-lg border hover:shadow-md transition">
                     <CardContent className="p-4">
                       <h3 className="font-medium truncate">{o.name}</h3>
                       <p className="text-xs text-neutral-500">{o.location}</p>
-                      <p className="text-xs text-neutral-500 mt-1 line-clamp-2">{o.description}</p>
+                      <p className="text-xs text-neutral-500 mt-1 line-clamp-2">
+                        {o.description}
+                      </p>
                     </CardContent>
                   </Card>
                 </Link>
               ))}
             </div>
             <button
-              onClick={() => setObjIndex(Math.min(objIndex + 1, Math.max(activeObjects.length - CARDS_PER_PAGE, 0)))}
+              onClick={() =>
+                setObjIndex(Math.min(objIndex + 1, Math.max(activeObjects.length - CARDS_PER_PAGE, 0)))
+              }
               disabled={objIndex >= activeObjects.length - CARDS_PER_PAGE}
               className="p-2 rounded-full hover:bg-neutral-100 disabled:opacity-30"
             >
