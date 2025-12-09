@@ -29,7 +29,7 @@ export async function getObjects(sp: RawSearchParams): Promise<Objekt[]> {
 
   if (q) {
     query = query.or(
-      `name.ilike.%${q}%,location.ilike.%${q}%,description.ilike.%${q}%`
+      `name.ilike.%${q}%,location.ilike.%${q}%,description.ilike.%${q}%`,
     )
   }
 
@@ -54,7 +54,8 @@ export async function getObjects(sp: RawSearchParams): Promise<Objekt[]> {
     rows = rows.filter(o => !(o.startdate == null && o.enddate == null))
 
     const wanted = fStatus === "active" ? "Active" : "Passive"
-    rows = rows.filter(o => objectStatus(o) === wanted)
+
+    rows = rows.filter(o => objectStatus(o).text === wanted)
   }
 
   return rows
