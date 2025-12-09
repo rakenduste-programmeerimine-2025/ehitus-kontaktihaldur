@@ -360,12 +360,36 @@ create table tasks (
 alter table tasks disable row level security;
 ---
 
---tasks update
-alter table tasks add column if not exists repeat_type text check (repeat_type in ('none', 'daily', 'weekly', 'monthly', 'yearly')) default 'none';
-alter table tasks add column if not exists repeat_interval int default 1; -- e.g. every 2 weeks
-alter table tasks add column if not exists repeat_on_weekdays boolean[] default null; -- e.g. {mon,wed,fri}
-alter table tasks add column if not exists repeat_on_month_day int default null; -- e.g. 15th of month
-alter table tasks add column if not exists last_completed_at timestamp with time zone default null;
-alter table tasks add column if not exists next_due_date timestamp with time zone default null;
+---tasks
+create table public.tasks (
+  id uuid not null default extensions.uuid_generate_v4 (),
+  object_id integer null,
+  title text not null,
+  is_done boolean null default false,
+  created_at timestamp with time zone null default now(),
+  updated_at timestamp with time zone null default now(),
+  repeat_type text null default 'none'::text,
+  repeat_interval integer null default 1,
+  repeat_on_weekdays boolean[] null,
+  repeat_on_month_day integer null,
+  last_completed_at timestamp with time zone null,
+  next_due_date timestamp with time zone null,
+  constraint tasks_pkey primary key (id),
+  constraint tasks_object_id_fkey foreign KEY (object_id) references object (id) on delete CASCADE,
+  constraint tasks_repeat_type_check check (
+    (
+      repeat_type = any (
+        array[
+          'none'::text,
+          'daily'::text,
+          'weekly'::text,
+          'monthly'::text,
+          'yearly'::text
+        ]
+      )
+    )
+  )
+) TABLESPACE pg_default;
+
 ---seejärel
 update tasks set repeat_type = 'none' where repeat_type is null;
