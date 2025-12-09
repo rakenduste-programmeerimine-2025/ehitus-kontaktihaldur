@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { User, DollarSign } from "lucide-react"
 import ObjectTasks from "@/components/objects/object-tasks"
+import AddWorkerReview from "@/components/objects/add-worker-review"
 
 export default async function ObjectDetailPage({
   params,
@@ -29,10 +30,16 @@ export default async function ObjectDetailPage({
     .single()
     .then(r => r.error || !r.data ? notFound() : r)
 
-  const { data: workers } = await supabase
-    .from("object_with_workers")
-    .select("contact, contactid, ispaid")
-    .eq("id", idNum)
+const { data: workerLinks } = await supabase
+  .from("object_with_workers")
+  .select("contact, contactid, ispaid")
+  .eq("id", idNum)
+
+// We still need the workingon.id to save the review → get it separately
+const { data: workingonIds } = await supabase
+  .from("workingon")
+  .select("id, fk_contact_id")
+  .eq("fk_object_id", idNum)
 
   const { data: tasks } = await supabase
     .from("tasks")
@@ -68,45 +75,70 @@ export default async function ObjectDetailPage({
         </div>
       </div>
 
-      {/* Workers Card */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <User className="w-5 h-5" /> Workers on Site
-              <Badge variant="outline" className="ml-2">{workers?.length ?? 0}</Badge>
-            </CardTitle>
-            <Button asChild variant="default" size="sm">
-              <Link href={`/objects/${object.id}/workers`}>Manage Workers</Link>
-            </Button>
+{/* töötajate info */}
+<Card>
+  <CardHeader>
+    <div className="flex items-center justify-between">
+      <CardTitle className="flex items-center gap-2">
+        <User className="w-5 h-5" /> Workers on Site
+        <Badge variant="outline" className="ml-2">
+          {workerLinks?.length ?? 0}
+        </Badge>
+      </CardTitle>
+      <Button asChild variant="default" size="sm">
+        <Link href={`/objects/${object.id}/workers`}>Manage Workers</Link>
+      </Button>
+    </div>
+  </CardHeader>
+  <CardContent>
+    {(!workerLinks || workerLinks.length === 0) ? (
+      <p className="text-muted-foreground italic">No workers assigned yet.</p>
+    ) : (
+      <div className="space-y-6">
+{workerLinks.map((w: any) => {
+  const workingonRecord = workingonIds?.find(
+    (wo: any) => wo.fk_contact_id === w.contactid
+  )
+
+  return (
+    <div
+      key={w.contactid}
+      className="p-4 rounded-lg border bg-card hover:bg-accent/5 transition-all"
+    >
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        {/* vasak*/}
+        <Link href={`/contacts/${w.contactid}`} className="flex items-center gap-3 flex-1 min-w-0">
+          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+            <User className="w-5 h-5 text-primary" />
           </div>
-        </CardHeader>
-        <CardContent>
-          {(!workers || workers.length === 0) ? (
-            <p className="text-muted-foreground italic">No workers assigned yet.</p>
-          ) : (
-            <div className="space-y-3">
-              {workers.map((w: any) => (
-                <Link key={w.contactid} href={`/contacts/${w.contactid}`} className="block">
-                  <div className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-accent/5 transition-all">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                        <User className="w-5 h-5 text-primary" />
-                      </div>
-                      <p className="font-medium hover:underline">{w.contact || "Unnamed"}</p>
-                    </div>
-                    {w.ispaid !== null && (
-                      <Badge variant={w.ispaid ? "default" : "secondary"}>
-                        {w.ispaid ? <><DollarSign className="w-3 h-3 mr-1" />Paid</> : "Unpaid"}
-                      </Badge>
-                    )}
-                  </div>
-                </Link>
-              ))}
-            </div>
+          <p className="font-medium truncate hover:underline">
+            {w.contact || "Unnamed Worker"}
+          </p>
+        </Link>
+
+        {/* nupsud*/}
+        <div className="flex items-center gap-3">
+          {w.ispaid !== null && (
+            <Badge variant={w.ispaid ? "default" : "secondary"}>
+              {w.ispaid ? "Paid" : "Unpaid"}
+            </Badge>
           )}
-        </CardContent>
-      </Card>
+
+          {workingonRecord && (
+            <AddWorkerReview
+              workingonId={workingonRecord.id}
+              contactName={w.contact || "this worker"}
+            />
+          )}
+        </div>
+      </div>
+    </div>
+  )
+})}
+      </div>
+    )}
+  </CardContent>
+</Card>
 
       {/* Tasks */}
       <ObjectTasks objectId={object.id} tasks={tasks || []} />
