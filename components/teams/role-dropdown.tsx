@@ -3,7 +3,7 @@
 import { useTransition } from "react"
 import { changeRole } from "@/app/teams/actions"
 
-const roles = ["ADMIN", "EDITOR", "VIEWER"]
+const roles = ["ADMIN", "EDITOR"]
 
 export function RoleDropdown({
   memberId,

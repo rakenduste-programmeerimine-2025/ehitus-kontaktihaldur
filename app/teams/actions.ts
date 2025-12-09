@@ -108,7 +108,7 @@ export async function joinTeamAction(_prev: unknown, formData: FormData) {
   const { error: joinError } = await supabase.from("team_member").insert({
     team_id: team.id,
     user_id: user.id,
-    role_id: 3, // VIEWER
+    role_id: 2, // VIEWER
     status_id: 1, // PENDING
   })
 

@@ -14,7 +14,7 @@ type MemberRow = {
   joined_at: string
 }
 
-const roles = ["ADMIN", "EDITOR", "VIEWER"]
+const roles = ["ADMIN", "EDITOR"]
 
 export function TeamMemberRow({
   m,
