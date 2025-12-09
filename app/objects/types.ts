@@ -17,6 +17,7 @@ export type RawSearchParams = {
   status?: "active" | "passive"
   period_from?: string
   period_to?: string
+  team?: string | null
 }
 
 export type SearchParamsPromise = Promise<RawSearchParams>

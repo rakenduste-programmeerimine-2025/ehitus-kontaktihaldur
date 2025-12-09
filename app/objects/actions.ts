@@ -22,13 +22,26 @@ export async function createObject(
 ): Promise<ObjectFormState> {
   const supabase = await createClient()
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return { success: false, message: "Not authenticated" }
+  }
+
+  const teamId = formData.get("team_id") as string | null
+
   const newObject = {
     name: formData.get("name") as string,
-    location: formData.get("location") as string | null,
-    description: formData.get("description") as string | null,
-    startdate: formData.get("startdate") as string | null,
-    enddate: formData.get("enddate") as string | null,
+    location: (formData.get("location") as string) || null,
+    description: (formData.get("description") as string) || null,
+    startdate: (formData.get("startdate") as string) || null,
+    enddate: (formData.get("enddate") as string) || null,
     isactive: formData.get("isactive") === "on",
+
+    user_id: teamId ? null : user.id,
+    team_id: teamId ? Number(teamId) : null,
   }
 
   const { data, error } = await supabase
@@ -106,6 +119,7 @@ export async function addTask(objectId: number, formData: FormData) {
 
   if (!title) return
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const taskData: any = {
     object_id: objectId,
     title,
@@ -121,9 +135,11 @@ export async function addTask(objectId: number, formData: FormData) {
   revalidatePath(`/objects/${objectId}`)
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function toggleTaskDone(taskId: string, currentDone: boolean, task: any) {
   const supabase = await createClient()
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const updates: any = {
     last_completed_at: new Date(),
   }
