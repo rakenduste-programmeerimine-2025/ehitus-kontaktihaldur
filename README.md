@@ -1,27 +1,58 @@
 Funktsionaalsus:
 
 Security:
-user account tied to their data.
-register account
-login
+ - User account tied to their data.
+ - Register account
+ - Login
+ - Reset password
+ - Session
 
 Objects:
-list all objects
-edit objects
-filter objects
-add object
-remove objects
-see all contacts tied to an object
+ - List all objects
+ - Edit objects
+ - Filter objects
+ - Add object
+ - Remove objects
+ - See all contacts tied to an object
+ - Todo list for objects
+ - Rate and review contacts
 
 Contacts:
-add contacts
-list all contacts
-filter contacts
-edit contacts
-blacklist or remove contacts from blacklist
-remove contacts
-tie contacts to object
-download filtered contact view to .csv
+ - Add contacts
+ - List all contacts
+ - Filter contacts
+ - Edit contacts
+ - Blacklist or remove contacts from blacklist
+ - Remove contacts
+ - Tie contacts to object
+ - Download filtered contact view to .csv
+
+Teams:
+ - Create team
+ - Join team
+ - Approveda/reject new team members
+ - Change team member roles
+ - Generate join codes
+ - Remove members
+ - Leave team
+ - See team related content
+ - Switch active team
+
+1. 30.10-05.11
+   project setup and preproduction
+2. 06.11-12.11
+3. 13.11-19.11
+4. 20.11-26.11
+5. 27.11-03.12
+6. 04.12-11.12
+
+## Low-fidelity wireframe
+
+[See the project prototype on Visily](https://app.visily.ai/projects/d7671805-e0ec-446a-ac0a-58536abd98d4/boards/2307785)
+
+Fredi
+Riina
+Agnessa
 
 1. 30.10-05.11
    Project setup and preproduction
