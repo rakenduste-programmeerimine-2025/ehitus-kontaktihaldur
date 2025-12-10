@@ -4,16 +4,28 @@ import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { toast } from "sonner"
 
 export function UpdatePasswordForm() {
   const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const supabase = createClient()
 
+  const confirmRef = useRef<HTMLInputElement>(null)
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    if (password !== confirmPassword) {
+      confirmRef.current?.setCustomValidity("Passwords do not match")
+      confirmRef.current?.reportValidity()
+      return
+    } else {
+      confirmRef.current?.setCustomValidity("")
+    }
+
     setIsLoading(true)
 
     const { error } = await supabase.auth.updateUser({ password })
@@ -23,6 +35,7 @@ export function UpdatePasswordForm() {
     } else {
       toast.success("Password updated successfully!")
       setPassword("")
+      setConfirmPassword("")
     }
 
     setIsLoading(false)
@@ -42,6 +55,22 @@ export function UpdatePasswordForm() {
           required
           value={password}
           onChange={e => setPassword(e.target.value)}
+        />
+      </div>
+
+      <div className="grid gap-2">
+        <Label htmlFor="confirmPassword">Confirm Password</Label>
+        <Input
+          id="confirmPassword"
+          type="password"
+          placeholder="Repeat the new password"
+          required
+          ref={confirmRef}
+          value={confirmPassword}
+          onChange={e => {
+            setConfirmPassword(e.target.value)
+            confirmRef.current?.setCustomValidity("") // ← FIX
+          }}
         />
       </div>
 
