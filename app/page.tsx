@@ -305,8 +305,8 @@ export default function Home2() {
                   key={c.id}
                   href={`/contacts/${c.id}`}
                 >
-                  <Card className="h-40 rounded-lg border hover:shadow-md transition">
-                    <CardContent className="p-4">
+                  <Card className="h-44 rounded-xl border shadow-md hover:shadow-xl hover:scale-[1.02] transition-all duration-200">
+                    <CardContent className="p-4 flex flex-col gap-1 h-full">
                       <h3 className="font-medium truncate">{c.name}</h3>
                       <p className="text-xs text-neutral-500">
                         {contactSkills[c.id]?.[0] || "No skill"}
@@ -356,7 +356,7 @@ export default function Home2() {
             >
               <ChevronLeft size={26} />
             </button>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 flex-1 px-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 flex-1 px-4">
               {activeObjects
                 .slice(objIndex, objIndex + CARDS_PER_PAGE)
                 .map(o => (
@@ -364,8 +364,8 @@ export default function Home2() {
                     key={o.id}
                     href={`/objects/${o.id}`}
                   >
-                    <Card className="h-40 rounded-lg border hover:shadow-md transition">
-                      <CardContent className="p-4">
+                    <Card className="h-44 rounded-xl border shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-[1.03]">
+                      <CardContent className="p-4 flex flex-col gap-1 h-full">
                         <h3 className="font-medium truncate">{o.name}</h3>
                         <p className="text-xs text-neutral-500">{o.location}</p>
                         <p className="text-xs text-neutral-500 mt-1 line-clamp-2">
