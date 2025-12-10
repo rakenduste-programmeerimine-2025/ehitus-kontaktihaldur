@@ -4,7 +4,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "static": "next build && next export"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.1.15",
