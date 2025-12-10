@@ -24,12 +24,17 @@ tie contacts to object
 download filtered contact view to .csv
 
 1. 30.10-05.11
-   project setup and preproduction
+   Project setup and preproduction
 2. 06.11-12.11
-3. 13.11-19.11
-4. 20.11-26.11
-5. 27.11-03.12
-6. 04.12-11.12
+   Database setup and main app components
+4. 13.11-19.11
+   Contact, account management and object basic functionality
+6. 20.11-26.11
+   Continue CRUD for objects, contacts and start team functionality
+8. 27.11-03.12
+   Tying together object and contacts pages, extra features
+10. 04.12-11.12
+    Finishing touches, nice-to-have features.
 
 ## Low-fidelity wireframe
 
